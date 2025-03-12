@@ -1046,42 +1046,134 @@ endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
 #
 #  C and C++ examples
 #
+add_executable(tiff2cbf
+  "${CBF__EXAMPLES}/tiff2cbf.c")
+target_link_libraries(tiff2cbf
+  cbf_static
+  tiff)
 
-# Note: to add a target with multiple sources/dependencies/libraries you must pass a list
-# separated by semicolons for the appropriate parameter.
-# Note: the math library should be linked in by appending ';${libm}' to the library list here
-macro(add_target target source dependencies libraries)
-	add_executable(${target} ${source})
-	if("${dependencies}")
-		add_dependencies(${target} "${dependencies}")
-	endif()
-	target_link_libraries(${target} ${libraries})
-endmacro()
+add_executable(cbf2nexus
+  "${CBF__EXAMPLES}/cbf2nexus.c")
+target_link_libraries(cbf2nexus
+  cbf_static)
 
-add_target(tiff2cbf "${CBF__EXAMPLES}/tiff2cbf.c" "" "cbf_static;tiff")
-add_target(cbf2nexus "${CBF__EXAMPLES}/cbf2nexus.c" "" cbf_static)
-add_target(nexus2cbf "${CBF__EXAMPLES}/nexus2cbf.c" "" "cbf_static;hdf5")
-add_target(minicbf2nexus "${CBF__EXAMPLES}/minicbf2nexus.c" "" cbf_static)
-add_target(adscimg2cbf "${CBF__EXAMPLES}/adscimg2cbf.c;${CBF__EXAMPLES}/adscimg2cbf_sub.c" "" "cbf_static;${libm}")
-add_target(cbf2adscimg "${CBF__EXAMPLES}/cbf2adscimg.c;${CBF__EXAMPLES}/cbf2adscimg_sub.c" "" "cbf_static;${libm}")
-add_target(convert_image "${CBF__EXAMPLES}/convert_image.c" "img_static" "cbf_static;${IMG_STATIC_LIBRARY_PATH}")
-add_target(convert_minicbf "${CBF__EXAMPLES}/convert_minicbf.c" "" cbf_static)
-add_target(makecbf "${CBF__EXAMPLES}/makecbf.c" "cbf_static;img_static" "cbf_static;${IMG_STATIC_LIBRARY_PATH}")
-add_target(cbf_tail "${CBF__EXAMPLES}/cbf_tail.c" "" "cbf_static")
-add_target(changtestcompression "${CBF__EXAMPLES}/changtestcompression.c" "" "cbf_static")
-add_target(img2cif "${CBF__EXAMPLES}/img2cif.c" "img_static" "cbf_static")
-add_target(cif2cbf "${CBF__EXAMPLES}/cif2cbf.c" "" "cbf_static;CQR;${libm}")
-add_target(cbf_template_t "${CBF__DECTRIS_EXAMPLES}/cbf_template_t.c" "" "cbf_static")
-add_target(testcell "${CBF__EXAMPLES}/testcell.C" "" "cbf_static")
-add_target(sauter_test "${CBF__EXAMPLES}/sauter_test.C" "" "cbf_static")
-add_target(sequence_match "${CBF__EXAMPLES}/sequence_match.c" "" "cbf_static")
-add_target(testulp "${CBF__EXAMPLES}/testulp.c" "" "cbf_static")
-add_target(testhdf5 "${CBF__EXAMPLES}/testhdf5.c" "" "cbf_static")
-add_target(testtree "${CBF__EXAMPLES}/testtree.c" "" "cbf_static")
-add_target(testalloc "${CBF__EXAMPLES}/testalloc.c" "" "cbf_static")
-add_target(testflat "${CBF__EXAMPLES}/testflat.c" "" "cbf_static")
-add_target(testflatpacked "${CBF__EXAMPLES}/testflatpacked.c" "" "cbf_static")
-add_target(testreals "${CBF__EXAMPLES}/testreals.c" "" "cbf_static")
+add_executable(nexus2cbf
+  "${CBF__EXAMPLES}/nexus2cbf.c")
+target_link_libraries(nexus2cbf
+  cbf_static
+  hdf5)
+
+add_executable(minicbf2nexus
+  "${CBF__EXAMPLES}/minicbf2nexus.c")
+target_link_libraries(minicbf2nexus
+  cbf_static)
+
+add_executable(adscimg2cbf
+  "${CBF__EXAMPLES}/adscimg2cbf.c"
+  "${CBF__EXAMPLES}/adscimg2cbf_sub.c")
+target_link_libraries(adscimg2cbf
+  cbf_static
+  "${libm}")
+
+add_executable(cbf2adscimg
+  "${CBF__EXAMPLES}/cbf2adscimg.c"
+  "${CBF__EXAMPLES}/cbf2adscimg_sub.c")
+target_link_libraries(cbf2adscimg
+  cbf_static
+  "${libm}")
+
+add_executable(convert_image
+  "${CBF__EXAMPLES}/convert_image.c")
+target_link_libraries(convert_image
+  cbf_static)
+
+add_executable(convert_minicbf
+  "${CBF__EXAMPLES}/convert_minicbf.c")
+target_link_libraries(convert_minicbf
+  cbf_static)
+
+add_executable(makecbf
+  "${CBF__EXAMPLES}/makecbf.c")
+target_link_libraries(makecbf
+  cbf_static)
+
+add_executable(cbf_tail
+  "${CBF__EXAMPLES}/cbf_tail.c")
+target_link_libraries(cbf_tail
+  cbf_static)
+
+add_executable(changtestcompression
+  "${CBF__EXAMPLES}/changtestcompression.c")
+target_link_libraries(changtestcompression
+  cbf_static)
+
+add_executable(img2cif
+  "${CBF__EXAMPLES}/img2cif.c")
+target_link_libraries(img2cif
+  cbf_static)
+
+add_executable(cif2cbf
+  "${CBF__EXAMPLES}/cif2cbf.c")
+target_link_libraries(cif2cbf
+  cbf_static
+  CQR
+  "${libm}")
+
+add_executable(cbf_template_t
+  "${CBF__DECTRIS_EXAMPLES}/cbf_template_t.c")
+target_link_libraries(cbf_template_t
+  cbf_static)
+
+add_executable(testcell
+  "${CBF__EXAMPLES}/testcell.C")
+target_link_libraries(testcell
+  cbf_static)
+
+add_executable(sauter_test
+  "${CBF__EXAMPLES}/sauter_test.C")
+target_link_libraries(sauter_test
+  cbf_static)
+
+add_executable(sequence_match
+  "${CBF__EXAMPLES}/sequence_match.c")
+target_link_libraries(sequence_match
+  cbf_static)
+
+add_executable(testulp
+  "${CBF__EXAMPLES}/testulp.c")
+target_link_libraries(testulp
+  cbf_static)
+
+add_executable(testhdf5
+  "${CBF__EXAMPLES}/testhdf5.c")
+target_link_libraries(testhdf5
+  cbf_static)
+
+add_executable(testtree
+  "${CBF__EXAMPLES}/testtree.c")
+target_link_libraries(testtree
+  cbf_static)
+
+add_executable(testalloc
+  "${CBF__EXAMPLES}/testalloc.c")
+target_link_libraries(testalloc
+  cbf_static)
+
+add_executable(testflat
+  "${CBF__EXAMPLES}/testflat.c")
+target_link_libraries(testflat
+  cbf_static)
+
+add_executable(testflatpacked
+  "${CBF__EXAMPLES}/testflatpacked.c")
+target_link_libraries(testflatpacked
+  cbf_static)
+
+add_executable(testreals
+  "${CBF__EXAMPLES}/testreals.c")
+target_link_libraries(testreals
+  cbf_static)
+
 
 if (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
 
@@ -1099,9 +1191,17 @@ add_custom_command(OUTPUT "${CBF__BLDEXMP}/test_xds_binary.f90"
     DEPENDS ${CBF_M4_FCB_DEFINES} "${CBF__M4}/test_xds_binary.m4"
     COMMENT "Generating ${test_xds_binary.f90}")
 
-add_target(test_fcb_read_image "${CBF__BLDEXMP}/test_fcb_read_image.f90" "fcb_static" "${FCB_STATIC_LIBRARY_PATH};hdf5")
-add_target(test_xds_binary "${CBF__BLDEXMP}/test_xds_binary.f90" "fcb_static" "${FCB_STATIC_LIBRARY_PATH};hdf5")
+  add_executable(test_fcb_read_image
+    "${CBF__BLDEXMP}/test_fcb_read_image.f90")
+  target_link_libraries(test_fcb_read_image
+    "${FCB_STATIC_LIBRARY_PATH}"
+    hdf5)
 
+  add_executable(test_xds_binary
+    "${CBF__BLDEXMP}/test_xds_binary.f90")
+  target_link_libraries(test_xds_binary
+    "${FCB_STATIC_LIBRARY_PATH}"
+    hdf5)
 endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
 
 
