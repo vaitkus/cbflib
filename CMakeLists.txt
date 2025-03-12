@@ -274,6 +274,8 @@
 ######################################################################
 
 cmake_minimum_required(VERSION 2.8)
+project(CBFlib
+  LANGUAGES C CXX)
 
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
@@ -287,19 +289,21 @@ endif(COMMAND cmake_policy)
 cmake_policy(SET CMP0135 NEW)
 
 
-set(CBF_USE_FORTRAN_ENV $ENV{CBF_USE_FORTRAN})
 set(CBF_F90FLAGS_ENV $ENV{F90FLAGS})
 set(CBF_USE_ULP $ENV{CBF_USE_ULP})
 set(CBF_M4FLAGS_ENV $ENV{M4FLAGS})
 set(CBF_HDF5REGISTER_MANUAL_ENV $ENV{CBF_HDF5REGISTER_MANUAL})
 
-if (CBF_USE_FORTRAN_ENV STREQUAL "NO")
-  project (CBFlib C CXX)
-  set(CBF_HDF5_ENABLE_FORTRAN "no")
-else (CBF_USE_FORTRAN_ENV STREQUAL "NO")
-  project (CBFlib C CXX Fortran)
-  set(CBF_HDF5_ENABLE_FORTRAN "yes")
-endif (CBF_USE_FORTRAN_ENV STREQUAL "NO")
+option(CBF_ENABLE_FORTRAN "Enable Fortran 90" ON)
+if(CBF_ENABLE_FORTRAN)
+  include(CheckLanguage)
+  check_language(Fortran)
+  if(CMAKE_Fortran_COMPILER)
+    enable_language(Fortran)
+  else()
+    message(FATAL_ERROR "Fortran 90 support requested, but no compiler found")
+  endif()
+endif()
 enable_testing()
 
 set (CBF_CMAKE_DEBUG "ON")
@@ -320,7 +324,7 @@ else (CBF_M4FLAGS_ENV)
   set(CBF_M4FLAGS "-Dfcb_bytes_in_rec=4096")
 endif (CBF_M4FLAGS_ENV)
 
-if (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+if(CBF_ENABLE_FORTRAN)
 
 if (CBF_F90FLAGS_ENV)
   set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} ${CBF_F90FLAGS_ENV}")
@@ -330,7 +334,7 @@ else (CBF_F90FLAGS_ENV)
   set(CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG}   -fno-range-check")
 endif (CBF_F90FLAGS_ENV)
 
-endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+endif()
 
 # make sure that the default is a RELEASE
 if (NOT CMAKE_BUILD_TYPE)
@@ -606,7 +610,7 @@ ExternalProject_add(
 		-DHDF5_BUILD_CPP_LIB:BOOL=Off
 		-DBUILD_SHARED_LIBS:BOOL=On
 		-DHDF5_BUILD_TOOLS:BOOL=On
-        -DHDF5_ENABLE_FORTRAN=${CBF_HDF5_ENABLE_FORTRAN}
+        -DHDF5_ENABLE_FORTRAN=$<IF:$<BOOL:${CBF_ENABLE_FORTRAN}>,ON,OFF>
 		-DCMAKE_INSTALL_PREFIX:PATH=${HDF5_INSTALL_DIR}
 		-DCMAKE_INSTALL_RPATH:PATH=${HDF5_INSTALL_DIR}/lib
 	INSTALL_DIR ${CMAKE_BINARY_DIR}/${CBF_HDF5}
@@ -797,7 +801,7 @@ set(
     ${CBF__SRC}/img.c
 )
 
-if (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+if(CBF_ENABLE_FORTRAN)
 
 set(
 	CBF_F90_BUILT_SOURCES 
@@ -820,7 +824,7 @@ set(
 	${CBF__SRC}/fcb_skip_whitespace.f90
 )
 
-endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+endif()
 
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -885,7 +889,7 @@ set(
 )
 
 
-if (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+if(CBF_ENABLE_FORTRAN)
 
 #
 # m4 FCB library macro files
@@ -914,7 +918,7 @@ set(
 	${CBF__M4}/test_xds_binary.m4
 )
 
-endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+endif()
 
 
 #
@@ -1003,7 +1007,7 @@ target_link_libraries(img_shared hdf5)
 set(IMG_SHARED_LIBRARY_PATH ${CBFlib_BINARY_DIR}/lib/libimg.so)
 
 
-if (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+if(CBF_ENABLE_FORTRAN)
 
 #
 # Build the f90 library sources
@@ -1040,7 +1044,7 @@ set_target_properties(fcb_shared PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(fcb_shared hdf5)
 set(FCB_SHARED_LIBRARY_PATH ${CBFlib_BINARY_DIR}/lib/libfcb.so)
 
-endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+endif()
 
 
 #
@@ -1175,17 +1179,16 @@ target_link_libraries(testreals
   cbf_static)
 
 
-if (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
-
 #
 #  F90 examples
 #
-add_custom_command(OUTPUT "${CBF__BLDEXMP}/test_fcb_read_image.f90"
+if(CBF_ENABLE_FORTRAN)
+  add_custom_command(OUTPUT "${CBF__BLDEXMP}/test_fcb_read_image.f90"
     WORKING_DIRECTORY "${CBF__M4}"
     COMMAND ${M4} -P "${CBF_M4FLAGS}" "${CBF__M4}/test_fcb_read_image.m4" > "${CBF__BLDEXMP}/test_fcb_read_image.f90"
     DEPENDS ${CBF_M4_FCB_DEFINES} "${CBF__M4}/test_fcb_read_image.m4"
     COMMENT "Generating ${test_fcb_read_image.f90}")
-add_custom_command(OUTPUT "${CBF__BLDEXMP}/test_xds_binary.f90"
+  add_custom_command(OUTPUT "${CBF__BLDEXMP}/test_xds_binary.f90"
     WORKING_DIRECTORY "${CBF__M4}"
     COMMAND ${M4} -P "${CBF_M4FLAGS}" "${CBF__M4}/test_xds_binary.m4" > "${CBF__BLDEXMP}/test_xds_binary.f90"
     DEPENDS ${CBF_M4_FCB_DEFINES} "${CBF__M4}/test_xds_binary.m4"
@@ -1202,8 +1205,7 @@ add_custom_command(OUTPUT "${CBF__BLDEXMP}/test_xds_binary.f90"
   target_link_libraries(test_xds_binary
     "${FCB_STATIC_LIBRARY_PATH}"
     hdf5)
-endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
-
+endif()
 
 
 #
@@ -1228,10 +1230,10 @@ install (TARGETS tiff2cbf DESTINATION bin)
 install (TARGETS cbf_static DESTINATION lib)
 install (TARGETS cbf_shared DESTINATION lib)
 
-if (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+if(CBF_ENABLE_FORTRAN)
   install (TARGETS fcb_static DESTINATION lib)
   install (TARGETS fcb_shared DESTINATION lib)
-endif (NOT (CBF_USE_FORTRAN_ENV STREQUAL "NO"))
+endif()
 
 install (TARGETS img_static DESTINATION lib)
 install (TARGETS img_shared DESTINATION lib)
