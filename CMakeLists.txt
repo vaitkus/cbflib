@@ -497,7 +497,7 @@ set(GRAPHICS  "${CBFlib_SOURCE_DIR}/html_graphics" CACHE STRING "")
 #
 # Definition to get a version of tifflib to support tiff2cbf
 #
-set(CBF_TIFF        "tiff-4.0.3-rev-29Sep13")
+set(CBF_TIFF        "tiff-4.0.6_rev_3Nov16")
 set(TIFF_INSTALL_DIR "${CMAKE_BINARY_DIR}/${CBF_TIFF}")
 
 
@@ -571,18 +571,30 @@ find_package(ZLIB)
 
 include(ExternalProject)
 
-ExternalProject_Add(
-	${CBF_TIFF}
-	URL "${CBF_TIFFURL}"
-	SOURCE_DIR ${CMAKE_BINARY_DIR}/external_packages/${CBF_TIFF}
-	CMAKE_ARGS
-		-DCMAKE_BUILD_TYPE:STRING=RELEASE DEBUG
-		-DCMAKE_INSTALL_PREFIX:PATH=${TIFF_INSTALL_DIR}
-		-DCMAKE_INSTALL_RPATH:PATH=${TIFF_INSTALL_DIR}/lib
-	INSTALL_DIR ${CMAKE_BINARY_DIR}/${CBF_TIFF}
-)
 
-set(TIFF_LIBRARY_PATH ${TIFF_INSTALL_DIR}/lib/libtiff${CMAKE_SHARED_LIBRARY_SUFFIX})
+#
+# TIFF
+#
+# LibTIFF to support tiff2cbf.
+find_program(PATCH patch)
+ExternalProject_Add(${CBF_TIFF}
+  URL "${CBF_TIFFURL}"
+  PATCH_COMMAND "${PATCH}"
+    -N -i "${CMAKE_CURRENT_SOURCE_DIR}/patches/tiff-4.0.6.patch" -p 1 -t
+  CMAKE_ARGS
+    "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
+    "-DCMAKE_INSTALL_BINDIR:PATH=${TIFF_INSTALL_DIR}/bin"
+    "-DCMAKE_INSTALL_DATAROOTDIR:PATH=${TIFF_INSTALL_DIR}/share/libtiff"
+    "-DCMAKE_INSTALL_INCLUDEDIR:PATH=${TIFF_INSTALL_DIR}/include/libtiff"
+    "-DCMAKE_INSTALL_LIBDIR:PATH=${TIFF_INSTALL_DIR}/lib"
+    "-DCMAKE_INSTALL_PREFIX:PATH=${TIFF_INSTALL_DIR}")
+file(MAKE_DIRECTORY "${TIFF_INSTALL_DIR}/include/libtiff")
+add_library(tiff SHARED IMPORTED)
+add_dependencies(tiff ${CBF_TIFF})
+set_target_properties(tiff PROPERTIES
+  IMPORTED_LOCATION "${TIFF_INSTALL_DIR}/lib/libtiff${CMAKE_SHARED_LIBRARY_SUFFIX}"
+  INTERFACE_INCLUDE_DIRECTORIES "${TIFF_INSTALL_DIR}/include/libtiff")
+
 
 ExternalProject_add(
 	${CBF_HDF5}
@@ -620,7 +632,6 @@ target_compile_definitions(hdf5
 # If a cloned repository is patched, CMake seems to attempt to
 # invoke PATCH_COMMAND on every run.  For now, avoid automatically
 # patching cloned repositories.
-find_program(PATCH patch)
 externalproject_add(${CBF_CQRLIB}
   URL "${CBF_CQRLIB_URL}"
   PATCH_COMMAND "${PATCH}"
@@ -941,11 +952,8 @@ set(
 
 # Set up the necessary includes
 
-include_directories(
-	BEFORE SYSTEM
-                      ${CBFlib_SOURCE_DIR}/include 
-	${CBFlib_BINARY_DIR}/${CBF_TIFF}/include
-                      )
+include_directories(BEFORE SYSTEM
+  ${CBFlib_SOURCE_DIR}/include)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/bin")
 
@@ -956,7 +964,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/lib")
 add_library(cbf_static STATIC ${CBF_C_SOURCES})
-add_dependencies(cbf_static ${CBF_TIFF})
 set_target_properties(cbf_static PROPERTIES OUTPUT_NAME "cbf")
 set_target_properties(cbf_static PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(cbf_static PROPERTIES SOVERSION "${CBF_APIVERSION}")
@@ -969,7 +976,6 @@ target_link_libraries(cbf_static
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/lib")
 add_library(cbf_shared SHARED  ${CBF_C_SOURCES})
-add_dependencies(cbf_shared ${CBF_TIFF})
 set_target_properties(cbf_shared PROPERTIES OUTPUT_NAME "cbf")
 set_target_properties(cbf_shared PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(cbf_shared PROPERTIES SOVERSION "${CBF_APIVERSION}")
@@ -1052,7 +1058,7 @@ macro(add_target target source dependencies libraries)
 	target_link_libraries(${target} ${libraries})
 endmacro()
 
-add_target(tiff2cbf "${CBF__EXAMPLES}/tiff2cbf.c" "${CBF_TIFF}" "cbf_static;${TIFF_LIBRARY_PATH}")
+add_target(tiff2cbf "${CBF__EXAMPLES}/tiff2cbf.c" "" "cbf_static;tiff")
 add_target(cbf2nexus "${CBF__EXAMPLES}/cbf2nexus.c" "" cbf_static)
 add_target(nexus2cbf "${CBF__EXAMPLES}/nexus2cbf.c" "" "cbf_static;hdf5")
 add_target(minicbf2nexus "${CBF__EXAMPLES}/minicbf2nexus.c" "" cbf_static)
