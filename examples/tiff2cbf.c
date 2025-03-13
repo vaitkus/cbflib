@@ -328,7 +328,7 @@ int main (int argc, char *argv [])
         
     a = clock ();
     
-    if (!(tif=TIFFOpen(tiffile, "r"))) {
+    if (!(tif=TIFFOpen(tiffile, "rC"))) {
         
         fprintf(stderr,"tiff2cbf: unable to open tiff image %s, abort\n", tiffile);
         local_exit(-1);

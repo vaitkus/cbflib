@@ -515,8 +515,6 @@ include(ExternalProject)
 find_program(PATCH patch)
 ExternalProject_Add(${CBF_TIFF}
   URL "${CBF_TIFFURL}"
-  PATCH_COMMAND "${PATCH}"
-    -N -i "${CMAKE_CURRENT_SOURCE_DIR}/patches/tiff-4.0.6.patch" -p 1 -t
   CMAKE_ARGS
     "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
     "-DCMAKE_INSTALL_BINDIR:PATH=${TIFF_INSTALL_DIR}/bin"
