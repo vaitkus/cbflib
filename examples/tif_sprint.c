@@ -38,11 +38,11 @@
  * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.                      *
  **********************************************************************/
 
-#include <stdint.h>
 #include <stdio.h>
 
 #include <assert.h>
 #include <ctype.h>
+#include <inttypes.h>
 #include <string.h>
 
 #include <tiffio.h>
@@ -124,24 +124,21 @@ _TIFFSNPrintField(char * str, const size_t xstrlen, const TIFFField *fip,
 
 	for(j = 0; j < value_count; j++) {
 		if(TIFFFieldDataType(fip) == TIFF_BYTE)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u", ((uint8 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu8, ((uint8 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_UNDEFINED)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%x",
-			    (unsigned int) ((unsigned char *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx8, ((uint8 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SBYTE)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%d", ((int8 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId8, ((int8 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SHORT)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u", ((uint16 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16, ((uint16 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SSHORT)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%d", ((int16 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId16, ((int16 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_LONG)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%lu",
-			    (unsigned long)((uint32 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu32, ((uint32 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SLONG)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%ld", (long)((int32 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId32, ((int32 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_IFD)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%lx",
-				(unsigned long)((uint32 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx32, ((uint32 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_RATIONAL
 			|| TIFFFieldDataType(fip) == TIFF_SRATIONAL) {
 			if (_TIFFFieldDataSize(fip) == 8)
@@ -151,29 +148,13 @@ _TIFFSNPrintField(char * str, const size_t xstrlen, const TIFFField *fip,
 		} else if(TIFFFieldDataType(fip) == TIFF_FLOAT)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%f", ((float *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_LONG8)
-#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%I64u",
-			    (unsigned __int64)((uint64 *) raw_data)[j]);
-#else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%llu",
-			    (unsigned long long)((uint64 *) raw_data)[j]);
-#endif
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu64, ((uint64 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SLONG8)
-#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%I64d", (__int64)((int64 *) raw_data)[j]);
-#else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%lld", (long long)((int64 *) raw_data)[j]);
-#endif
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId64, ((int64 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_IFD8)
-#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%I64x",
-				(unsigned __int64)((uint64 *) raw_data)[j]);
-#else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%llx",
-				(unsigned long long)((uint64 *) raw_data)[j]);
-#endif
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx64, ((uint64 *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_DOUBLE)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%f", ((double *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%lf", ((double *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_ASCII) {
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%s", (char *) raw_data);
 			break;
@@ -212,7 +193,7 @@ _TIFFPrettySNPrintField(TIFF* tif, char * str, const size_t xstrlen, ttag_t tag,
 					chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "CMYK\n");
 					break;
 				default:
-					chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+					chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 						*((uint16*)raw_data),
 						*((uint16*)raw_data));
 					break;
@@ -223,7 +204,7 @@ _TIFFPrettySNPrintField(TIFF* tif, char * str, const size_t xstrlen, ttag_t tag,
 
 		case TIFFTAG_DOTRANGE:
 			if (value_count == 2 && TIFFFieldDataType(fip) == TIFF_SHORT) {
-				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Dot Range: %u-%u\n",
+				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Dot Range: %" PRIu16 "-%" PRIu16 "\n",
 					((uint16*)raw_data)[0], ((uint16*)raw_data)[1]);
 				return chars_used;
 			}
@@ -253,18 +234,18 @@ _TIFFPrettySNPrintField(TIFF* tif, char * str, const size_t xstrlen, ttag_t tag,
 			 * defined as array of LONG values.
 			 */
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0),
-			    "  RichTIFFIPTC Data: <present>, %lu bytes\n",
-			    (unsigned long) value_count * 4);
+			    "  RichTIFFIPTC Data: <present>, %" PRIu32 " bytes\n",
+			    value_count * 4);
 			return chars_used;
 
 		case TIFFTAG_PHOTOSHOP:
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Photoshop Data: <present>, %lu bytes\n",
-			    (unsigned long) value_count);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Photoshop Data: <present>, %" PRIu32 " bytes\n",
+			    value_count);
 			return chars_used;
 
 		case TIFFTAG_ICCPROFILE:
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  ICC Profile: <present>, %lu bytes\n",
-			    (unsigned long) value_count);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  ICC Profile: <present>, %" PRIu32 " bytes\n",
+			    value_count);
 			return chars_used;
 
 		case TIFFTAG_STONITS:
@@ -307,15 +288,9 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 
     size_t chars_used = 0;
 
-#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))
-	chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "TIFF Directory at offset 0x%I64x (%I64u)\n",
-		(unsigned __int64) TIFFCurrentDirOffset(tif),
-		(unsigned __int64) TIFFCurrentDirOffset(tif));
-#else
-	chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "TIFF Directory at offset 0x%llx (%llu)\n",
-		(unsigned long long) TIFFCurrentDirOffset(tif),
-		(unsigned long long) TIFFCurrentDirOffset(tif));
-#endif
+	chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "TIFF Directory at offset 0x%" PRIx64 " (%" PRIu64 ")\n",
+		TIFFCurrentDirOffset(tif),
+		TIFFCurrentDirOffset(tif));
 	if (!TIFFGetField(tif, TIFFTAG_EXTRASAMPLES, &extrasamples, &sampleinfo)) {
 		extrasamples = 0;
 		sampleinfo = NULL;
@@ -335,25 +310,25 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 		}
 		if (subfiletype & FILETYPE_MASK)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%stransparency mask", sep);
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " (%lu = 0x%lx)\n",
-		    (long) subfiletype, (long) subfiletype);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " (%" PRIu32 " = 0x%" PRIx32 ")\n",
+		    subfiletype, subfiletype);
 	}
 	if (TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength)
 	    && TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &imagewidth)) {
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Image Width: %lu Image Length: %lu",
-		    (unsigned long) imagewidth, (unsigned long) imagelength);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Image Width: %" PRIu32 " Image Length: %" PRIu32,
+			imagewidth, imagelength);
 		if (TIFFGetField(tif, TIFFTAG_IMAGEDEPTH, &imagedepth))
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " Image Depth: %lu",
-			    (unsigned long) imagedepth);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " Image Depth: %" PRIu32,
+			    imagedepth);
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "\n");
 	}
 	if (TIFFGetField(tif, TIFFTAG_TILELENGTH, &tilelength)
 	    && TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tilewidth)) {
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Tile Width: %lu Tile Length: %lu",
-		    (unsigned long) tilewidth, (unsigned long) tilelength);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Tile Width: %" PRIu32 " Tile Length: %" PRIu32,
+		    tilewidth, tilelength);
 		if (TIFFGetField(tif, TIFFTAG_TILEDEPTH, &tiledepth))
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " Tile Depth: %lu",
-			    (unsigned long) tiledepth);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " Tile Depth: %" PRIu32,
+			    tiledepth);
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "\n");
 	}
 	if (TIFFGetField(tif, TIFFTAG_XRESOLUTION, &xresolution)
@@ -372,7 +347,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " pixels/cm");
 				break;
 			default:
-				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " (unit %u = 0x%x)",
+				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " (unit %" PRIu16 " = 0x%" PRIx16 ")",
 				    resolutionunit,
 				    resolutionunit);
 				break;
@@ -385,7 +360,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Position: %g, %g\n",
 		    xposition, yposition);
 	if (TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bitspersample))
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Bits/Sample: %u\n", bitspersample);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Bits/Sample: %" PRIu16 "\n", bitspersample);
 	if (TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &sampleformat)) {
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Sample Format: ");
 		switch (sampleformat) {
@@ -408,7 +383,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "complex IEEE floating point\n");
 			break;
 		default:
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 			    sampleformat, sampleformat);
 			break;
 		}
@@ -419,7 +394,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 		if (c)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%s\n", c->name);
 		else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 			    compression, compression);
 	}
 	if (TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photometric)) {
@@ -435,14 +410,14 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "CIE Log2(L) (u',v')\n");
 				break;
 			default:
-				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 				    photometric, photometric);
 				break;
 			}
 		}
 	}
 	if (extrasamples) {
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Extra Samples: %u<", extrasamples);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Extra Samples: %" PRIu16 "<", extrasamples);
 		sep = "";
 		for (i = 0; i < extrasamples; i++) {
 			switch (sampleinfo[i]) {
@@ -456,7 +431,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%sunassoc-alpha", sep);
 				break;
 			default:
-				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%s%u (0x%x)", sep,
+				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%s%" PRIu16 " (0x%" PRIx16 ")", sep,
 				    sampleinfo[i], sampleinfo[i]);
 				break;
 			}
@@ -494,7 +469,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "error diffused\n");
 			break;
 		default:
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 			    threshholding, threshholding);
 			break;
 		}
@@ -509,14 +484,14 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "lsb-to-msb\n");
 			break;
 		default:
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 			    fillorder, fillorder);
 			break;
 		}
 	}
 	if (TIFFGetField(tif, TIFFTAG_YCBCRSUBSAMPLING, &ycbcrsubsampling))
         {
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  YCbCr Subsampling: %u, %u\n",
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  YCbCr Subsampling: %" PRIu16 ", %" PRIu16 "\n",
 			ycbcrsubsampling[0], ycbcrsubsampling[1] );
 	}
 	if (TIFFGetField(tif, TIFFTAG_YCBCRPOSITIONING, &ycbcrpositioning)) {
@@ -529,35 +504,35 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "cosited\n");
 			break;
 		default:
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 			    ycbcrpositioning, ycbcrpositioning);
 			break;
 		}
 	}
 	if (TIFFGetField(tif, TIFFTAG_HALFTONEHINTS, &halftonehints))
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Halftone Hints: light %u dark %u\n",
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Halftone Hints: light %" PRIu16 " dark %" PRIu16 "\n",
 		    halftonehints[0], halftonehints[1]);
 	if (TIFFGetField(tif, TIFFTAG_ORIENTATION, &orientation)) {
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Orientation: ");
 		if (orientation < NORIENTNAMES)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%s\n", orientNames[orientation]);
 		else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 			    orientation, orientation);
 	}
 	if (samplesperpixel)
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Samples/Pixel: %u\n", samplesperpixel);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Samples/Pixel: %" PRIu16 "\n", samplesperpixel);
 	if (TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &rowsperstrip)) {
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Rows/Strip: ");
 		if (rowsperstrip == (uint32) -1)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "(infinite)\n");
 		else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%lu\n", (unsigned long) rowsperstrip);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu32 "\n", rowsperstrip);
 	}
 	if (TIFFGetField(tif, TIFFTAG_MINSAMPLEVALUE, &minsamplevalue))
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Min Sample Value: %u\n", minsamplevalue);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Min Sample Value: %" PRIu16 "\n", minsamplevalue);
 	if (TIFFGetField(tif, TIFFTAG_MAXSAMPLEVALUE, &maxsamplevalue))
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Max Sample Value: %u\n", maxsamplevalue);
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Max Sample Value: %" PRIu16 "\n", maxsamplevalue);
 	if (TIFFGetField(tif, TIFFTAG_SMINSAMPLEVALUE, &sminsamplevalue)) {
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  SMin Sample Value: %g\n", sminsamplevalue);
 	}
@@ -574,13 +549,13 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "separate image planes\n");
 			break;
 		default:
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%u (0x%x)\n",
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
 			   planarconfig, planarconfig);
 			break;
 		}
 	}
 	if (TIFFGetField(tif, TIFFTAG_PAGENUMBER, &pagenumber))
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Page Number: %u-%u\n",
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Page Number: %" PRIu16 "-%" PRIu16 "\n",
 		    pagenumber[0], pagenumber[1]);
 	if (TIFFGetField(tif, TIFFTAG_COLORMAP, &colormap)) {
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Color Map: ");
@@ -588,7 +563,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "\n");
 			n = 1L<<bitspersample;
 			for (l = 0; l < n; l++)
-				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "   %5lu: %5u %5u %5u\n",
+				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "   %5ld: %5" PRIu16 " %5" PRIu16 " %5" PRIu16 "\n",
 				    l,
 				    colormap[0][l],
 				    colormap[1][l],
@@ -609,12 +584,12 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "\n");
 			n = 1L<<bitspersample;
 			for (l = 0; l < n; l++) {
-				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "    %2lu: %5u",
+				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "    %2ld: %5" PRIu16,
 				    l, transferfunction[0][l]);
 				for (i = 1;
 				     i < samplesperpixel - extrasamples && i < 3;
 				     i++)
-					chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " %5u",
+					chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " %5" PRIu16,
 					    transferfunction[i][l]);
                 chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0),"\n");
 
@@ -625,13 +600,8 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 	if (TIFFGetField(tif, TIFFTAG_SUBIFD, &nsubifd, &subifd) && subifd) {
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  SubIFD Offsets:");
 		for (i = 0; i < nsubifd; i++)
-#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " %5I64u",
-				(unsigned __int64) subifd[i]);
-#else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " %5llu",
-				(unsigned long long) subifd[i]);
-#endif
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), " %5" PRIu64,
+				subifd[i]);
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0),"\n");
 	}
 
@@ -732,21 +702,14 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 	    TIFFGetField(tif, TIFFTAG_STRIPBYTECOUNTS, &stripbytecounts)) {
 		uint32 s;
 
-		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  %lu %s:\n",
-		    (long) TIFFNumberOfStrips(tif),
+		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  %" PRIu32 " %s:\n",
+		    TIFFNumberOfStrips(tif),
 		    TIFFIsTiled(tif) ? "Tiles" : "Strips");
 		for (s = 0; s < TIFFNumberOfStrips(tif); s++)
-#if defined(__WIN32__) && (defined(_MSC_VER) || defined(__MINGW32__))
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "    %3lu: [%8I64u, %8I64u]\n",
-			    (unsigned long) s,
-			    (unsigned __int64) stripoffsets[s],
-			    (unsigned __int64) stripbytecounts[s]);
-#else
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "    %3lu: [%8llu, %8llu]\n",
-			    (unsigned long) s,
-			    (unsigned long long) stripoffsets[s],
-			    (unsigned long long) stripbytecounts[s]);
-#endif
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "    %3" PRIu32 ": [%8" PRIu64 ", %8" PRIu64 "]\n",
+			    s,
+			    stripoffsets[s],
+			    stripbytecounts[s]);
 	}
     return chars_used;
 }
