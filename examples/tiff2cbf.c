@@ -215,9 +215,9 @@ int main (int argc, char *argv [])
     TIFF *tif;
     cbf_handle cbf;
     clock_t a,b;
-    uint32 width;
-    uint32 height;
-    uint32 npixels;
+    uint32_t width;
+    uint32_t height;
+    uint32_t npixels;
     unsigned char * raster;
     char * tiffile;
     char * cbffile;
@@ -367,7 +367,7 @@ int main (int argc, char *argv [])
         tstrip_t nstrips, strip;
         tsize_t stripsize;
         int elsize, elsign, real, plex, treturn;
-        uint16 sampleformat, samplesperpixel, bitspersample, planarconfig;
+        uint16_t sampleformat, samplesperpixel, bitspersample, planarconfig;
         size_t dimslow, dimmid, dimfast;
         
         plex = 1;

@@ -114,9 +114,9 @@ _TIFFFieldDataSize(const TIFFField *fip)
 
 static size_t
 _TIFFSNPrintField(char * str, const size_t xstrlen, const TIFFField *fip,
-                  uint32 value_count, void *raw_data)
+                  uint32_t value_count, void *raw_data)
 {
-	uint32 j;
+	uint32_t j;
 
     size_t chars_used = 0;
 		
@@ -124,21 +124,21 @@ _TIFFSNPrintField(char * str, const size_t xstrlen, const TIFFField *fip,
 
 	for(j = 0; j < value_count; j++) {
 		if(TIFFFieldDataType(fip) == TIFF_BYTE)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu8, ((uint8 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu8, ((uint8_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_UNDEFINED)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx8, ((uint8 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx8, ((uint8_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SBYTE)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId8, ((int8 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId8, ((int8_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SHORT)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16, ((uint16 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16, ((uint16_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SSHORT)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId16, ((int16 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId16, ((int16_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_LONG)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu32, ((uint32 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu32, ((uint32_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SLONG)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId32, ((int32 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId32, ((int32_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_IFD)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx32, ((uint32 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx32, ((uint32_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_RATIONAL
 			|| TIFFFieldDataType(fip) == TIFF_SRATIONAL) {
 			if (_TIFFFieldDataSize(fip) == 8)
@@ -148,11 +148,11 @@ _TIFFSNPrintField(char * str, const size_t xstrlen, const TIFFField *fip,
 		} else if(TIFFFieldDataType(fip) == TIFF_FLOAT)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%f", ((float *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_LONG8)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu64, ((uint64 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu64, ((uint64_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_SLONG8)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId64, ((int64 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRId64, ((int64_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_IFD8)
-			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx64, ((uint64 *) raw_data)[j]);
+			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "0x%" PRIx64, ((uint64_t *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_DOUBLE)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%lf", ((double *) raw_data)[j]);
 		else if(TIFFFieldDataType(fip) == TIFF_ASCII) {
@@ -175,7 +175,7 @@ _TIFFSNPrintField(char * str, const size_t xstrlen, const TIFFField *fip,
 
 static size_t
 _TIFFPrettySNPrintField(TIFF* tif, char * str, const size_t xstrlen, ttag_t tag,
-                        uint32 value_count, void *raw_data)
+                        uint32_t value_count, void *raw_data)
 {
     const TIFFField *fip;
     
@@ -188,14 +188,14 @@ _TIFFPrettySNPrintField(TIFF* tif, char * str, const size_t xstrlen, ttag_t tag,
 		case TIFFTAG_INKSET:
 			if (value_count == 2 && TIFFFieldDataType(fip) == TIFF_SHORT) {
 				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Ink Set: ");
-				switch (*((uint16*)raw_data)) {
+				switch (*((uint16_t *)raw_data)) {
 				case INKSET_CMYK:
 					chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "CMYK\n");
 					break;
 				default:
 					chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu16 " (0x%" PRIx16 ")\n",
-						*((uint16*)raw_data),
-						*((uint16*)raw_data));
+						*((uint16_t *)raw_data),
+						*((uint16_t *)raw_data));
 					break;
 				}
 				return chars_used;
@@ -205,7 +205,7 @@ _TIFFPrettySNPrintField(TIFF* tif, char * str, const size_t xstrlen, ttag_t tag,
 		case TIFFTAG_DOTRANGE:
 			if (value_count == 2 && TIFFFieldDataType(fip) == TIFF_SHORT) {
 				chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Dot Range: %" PRIu16 "-%" PRIu16 "\n",
-					((uint16*)raw_data)[0], ((uint16*)raw_data)[1]);
+					((uint16_t *)raw_data)[0], ((uint16_t *)raw_data)[1]);
 				return chars_used;
 			}
 			return chars_used;
@@ -220,7 +220,7 @@ _TIFFPrettySNPrintField(TIFF* tif, char * str, const size_t xstrlen, ttag_t tag,
 
 		case TIFFTAG_XMLPACKET:
 		{
-			uint32 i;
+			uint32_t i;
 
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  XMLPacket (XMP Metadata):\n" );
 			for(i = 0; i < value_count; i++)
@@ -269,7 +269,7 @@ size_t
 cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags)
 {
 	char *sep;
-	uint16 i;
+	uint16_t i;
 	long l, n;
     
 	const char *inknames;
@@ -524,7 +524,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Samples/Pixel: %" PRIu16 "\n", samplesperpixel);
 	if (TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &rowsperstrip)) {
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  Rows/Strip: ");
-		if (rowsperstrip == (uint32) -1)
+		if (rowsperstrip == (uint32_t) -1)
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "(infinite)\n");
 		else
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "%" PRIu32 "\n", rowsperstrip);
@@ -614,9 +614,9 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 
 		count = (short) TIFFGetTagListCount(tif);
 		for(i = 0; i < count; i++) {
-			uint32 tag = TIFFGetTagListEntry(tif, i);
+			uint32_t tag = TIFFGetTagListEntry(tif, i);
 			const TIFFField *fip;
-			uint32 value_count;
+			uint32_t value_count;
 			int mem_alloc = 0;
 			void *raw_data;
 			uint16_t dotrange[2]; /* must be kept in that scope and not moved in
@@ -631,7 +631,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 					if(TIFFGetField(tif, tag, &value_count, &raw_data) != 1)
 						continue;
 				} else if (TIFFFieldReadCount(fip) == TIFF_VARIABLE ) {
-					uint16 small_value_count;
+					uint16_t small_value_count;
 					if(TIFFGetField(tif, tag, &small_value_count, &raw_data) != 1)
 						continue;
 					value_count = small_value_count;
@@ -700,7 +700,7 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
 	if ((flags & TIFFPRINT_STRIPS) &&
 	    TIFFGetField(tif, TIFFTAG_STRIPOFFSETS, &stripoffsets) &&
 	    TIFFGetField(tif, TIFFTAG_STRIPBYTECOUNTS, &stripbytecounts)) {
-		uint32 s;
+		uint32_t s;
 
 		chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  %" PRIu32 " %s:\n",
 		    TIFFNumberOfStrips(tif),
