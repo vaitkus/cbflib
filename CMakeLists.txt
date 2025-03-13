@@ -278,6 +278,7 @@ cmake_minimum_required(VERSION 3.11)
 project(CBFlib
   LANGUAGES C CXX
   VERSION 0.9.8)
+set(VERSION_INFO "3:0:1")
 
 
 # Set timestamps of extracted contents to the time of extraction.
@@ -416,50 +417,14 @@ CBF_REQUIRE_DIRECTORY(${CBF__SHARE})
 CBF_REQUIRE_DIRECTORY(${CBF__EXT_PKG})
 CBF_REQUIRE_DIRECTORY(${CBF__DATA})
 
-# Version string and API version string -- obtained from cbf.h
 
-# Extract the version components
-
-file (READ ${CBFlib_SOURCE_DIR}/include/cbf.h CBFlib_cbf_h_contents)
-string (REGEX REPLACE ".*#define[ \t]+CBF_VERS_MAJOR[ \t]+([0-9]*).*$"
-    "\\1" CBF_VERS_MAJOR ${CBFlib_cbf_h_contents})
-CBF_DEBUG_MESSAGE( "MAJOR VERSION: ${CBF_VERS_MAJOR}")
-string (REGEX REPLACE ".*#define[ \t]+CBF_VERS_MINOR[ \t]+([0-9]*).*$"
-    "\\1" CBF_VERS_MINOR ${CBFlib_cbf_h_contents})
-CBF_DEBUG_MESSAGE( "MINOR VERSION: ${CBF_VERS_MINOR}")
-string (REGEX REPLACE ".*#define[ \t]+CBF_VERS_RELEASE[ \t]+([0-9.]*).*$"
-    "\\1" CBF_VERS_RELEASE ${CBFlib_cbf_h_contents})
-CBF_DEBUG_MESSAGE( "RELEASE: ${CBF_VERS_RELEASE}")
-string (REGEX REPLACE ".*#define[ \t]+CBF_VERS_SUBRELEASE[ \t]+\"([0-9A-Za-z.]*)\".*$"
-    "\\1" CBF_VERS_SUBRELEASE ${CBFlib_cbf_h_contents})
-CBF_DEBUG_MESSAGE( "SUBRELEASE: ${CBF_VERS_SUBRELEASE}")
-
-# Extract the API version components
-
-string (REGEX REPLACE ".*#define[ \t]+CBF_APIVERS_CUR[ \t]+([0-9]*).*$"
-    "\\1" CBF_APIVERS_CUR ${CBFlib_cbf_h_contents})
-CBF_DEBUG_MESSAGE( "API VERSION: ${CBF_APIVERS_CUR}")
-string (REGEX REPLACE ".*#define[ \t]+CBF_APIVERS_REV[ \t]+([0-9]*).*$"
-    "\\1" CBF_APIVERS_REV ${CBFlib_cbf_h_contents})
-CBF_DEBUG_MESSAGE( "API REVISION: ${CBF_APIVERS_REV}")
-string (REGEX REPLACE ".*#define[ \t]+CBF_APIVERS_AGE[ \t]+([0-9]*).*$"
-    "\\1" CBF_APIVERS_AGE ${CBFlib_cbf_h_contents})
-CBF_DEBUG_MESSAGE( "API AGE: ${CBF_APIVERS_AGE}")
-
-
-if(CBF_VERS_SUBRELEASE)
-  set (CBF_VERSION "${CBF_VERS_MAJOR}.${CBF_VERS_MINOR}.${CBF_VERS_RELEASE}-${CBF_VERS_SUBRELEASE}")
-else(CBF_VERS_SUBRELEASE)
-  set (CBF_VERSION "${CBF_VERS_MAJOR}.${CBF_VERS_MINOR}.${CBF_VERS_RELEASE}")
-endif(CBF_VERS_SUBRELEASE)
-if(CBF_CMAKE_DEBUG)
-  message (STATUS "VERSION:  ${CBF_VERSION}")
-endif(CBF_CMAKE_DEBUG)
-
-set (CBF_APIVERSION "${CBF_APIVERS_CUR}.${CBF_APIVERS_REV}.${CBF_APIVERS_AGE}")
-CBF_DEBUG_MESSAGE( "APIVERSION:  ${CBF_APIVERSION}")
-
-
+# Under the (Linux) libtool convention, the single-component SOVERSION
+# is the difference between the current and age components of
+# VERSION_INFO.
+string(REPLACE ":" ";" _cra "${VERSION_INFO}")
+list(GET _cra 0 _current)
+list(GET _cra 2 _age)
+math(EXPR SOVERSION "${_current} - ${_age}")
 
 
 set(JCBF      "${CBFlib_SOURCE_DIR}/jcbf" CACHE STRING "")
@@ -936,7 +901,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/lib")
 add_library(cbf_static STATIC ${CBF_C_SOURCES})
 set_target_properties(cbf_static PROPERTIES OUTPUT_NAME "cbf")
 set_target_properties(cbf_static PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(cbf_static PROPERTIES SOVERSION "${CBF_APIVERSION}")
+set_target_properties(cbf_static PROPERTIES SOVERSION "${SOVERSION}")
 target_link_libraries(cbf_static
   PUBLIC hdf5
   PRIVATE pcreposix_static
@@ -948,7 +913,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CBFlib_BINARY_DIR}/lib")
 add_library(cbf_shared SHARED  ${CBF_C_SOURCES})
 set_target_properties(cbf_shared PROPERTIES OUTPUT_NAME "cbf")
 set_target_properties(cbf_shared PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(cbf_shared PROPERTIES SOVERSION "${CBF_APIVERSION}")
+set_target_properties(cbf_shared PROPERTIES SOVERSION "${SOVERSION}")
 target_link_libraries(cbf_shared
   PUBLIC hdf5
   PRIVATE pcreposix_shared
