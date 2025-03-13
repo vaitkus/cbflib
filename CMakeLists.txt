@@ -982,6 +982,7 @@ endif()
 #  C and C++ examples
 #
 add_executable(tiff2cbf
+  "${CBF__EXAMPLES}/tif_sprint.c"
   "${CBF__EXAMPLES}/tiff2cbf.c")
 target_link_libraries(tiff2cbf
   cbf_static
