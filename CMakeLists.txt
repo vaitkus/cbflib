@@ -293,6 +293,8 @@ set(CBF_USE_ULP $ENV{CBF_USE_ULP})
 set(CBF_M4FLAGS_ENV $ENV{M4FLAGS})
 set(CBF_HDF5REGISTER_MANUAL_ENV $ENV{CBF_HDF5REGISTER_MANUAL})
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+
 option(CBF_ENABLE_FORTRAN "Enable Fortran 90" ON)
 if(CBF_ENABLE_FORTRAN)
   include(CheckLanguage)
@@ -341,15 +343,6 @@ if (NOT CMAKE_BUILD_TYPE)
       "Choose the type of build, options are: None Debug Release."
       FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
-
-#
-#  Favor static libraries
-#
-IF(WIN32)
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ELSE(WIN32)
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ENDIF(WIN32)
 
 
 #
@@ -438,18 +431,17 @@ set(GRAPHICS  "${CBFlib_SOURCE_DIR}/html_graphics" CACHE STRING "")
 
 
 #
-# Definition to get a version of tifflib to support tiff2cbf
-#
-set(CBF_TIFF        "tiff-4.0.6_rev_3Nov16")
-set(TIFF_INSTALL_DIR "${CMAKE_BINARY_DIR}/${CBF_TIFF}")
-
-
-#
 # CQRlib
 set(CBF_CQRLIB "cqrlib-1.1.4")
 set(CBF_CQRLIB_URL "https://github.com/yayahjb/cqrlib/archive/refs/tags/CQRlib-1.1.4.tar.gz")
 set(CQRLIB_INSTALL_DIR "${CMAKE_BINARY_DIR}/${CBF_CQRLIB}")
 
+include(FetchContent)
+find_program(PATCH patch)
+
+fetchcontent_declare(tiff
+  URL "http://downloads.sf.net/cbflib/tiff-4.0.6_rev_3Nov16.tar.gz"
+  URL_HASH MD5=594d1811ce715f7d5ec586bf5e0c4732)
 
 #
 # Definitions to get a version of HDF5
@@ -491,7 +483,6 @@ set(CBF_REGEX    "regex-20090805")
 set(CBF_PCRE     "pcre-8.33")
 set(CBF_REGEXURL "http://downloads.sf.net/cbflib/${CBF_REGEX}.tar.gz")
 set(CBF_PCREURL  "http://downloads.sf.net/cbflib/${CBF_PCRE}.tar.gz")
-set(CBF_TIFFURL  "http://downloads.sf.net/cbflib/${CBF_TIFF}.tar.gz")
 set(CBF_HDF5URL  "http://downloads.sf.net/cbflib/${CBF_HDF5}.tar.gz")
 
 
@@ -512,22 +503,26 @@ include(ExternalProject)
 # TIFF
 #
 # LibTIFF to support tiff2cbf.
-find_program(PATCH patch)
-ExternalProject_Add(${CBF_TIFF}
-  URL "${CBF_TIFFURL}"
-  CMAKE_ARGS
-    "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
-    "-DCMAKE_INSTALL_BINDIR:PATH=${TIFF_INSTALL_DIR}/bin"
-    "-DCMAKE_INSTALL_DATAROOTDIR:PATH=${TIFF_INSTALL_DIR}/share/libtiff"
-    "-DCMAKE_INSTALL_INCLUDEDIR:PATH=${TIFF_INSTALL_DIR}/include/libtiff"
-    "-DCMAKE_INSTALL_LIBDIR:PATH=${TIFF_INSTALL_DIR}/lib"
-    "-DCMAKE_INSTALL_PREFIX:PATH=${TIFF_INSTALL_DIR}")
-file(MAKE_DIRECTORY "${TIFF_INSTALL_DIR}/include/libtiff")
-add_library(tiff SHARED IMPORTED)
-add_dependencies(tiff ${CBF_TIFF})
-set_target_properties(tiff PROPERTIES
-  IMPORTED_LOCATION "${TIFF_INSTALL_DIR}/lib/libtiff${CMAKE_SHARED_LIBRARY_SUFFIX}"
-  INTERFACE_INCLUDE_DIRECTORIES "${TIFF_INSTALL_DIR}/include/libtiff")
+set(CBF_WITH_LIBTIFF ON CACHE BOOL
+  "Link against internally built LibTIFF library")
+mark_as_advanced(CBF_WITH_LIBTIFF)
+
+if(CBF_WITH_LIBTIFF)
+  # The first LibTIFF at https://gitlab.com/libtiff/libtiff with
+  # native CMake support seems to be 4.0.5.  The first version that
+  # builds on current MSYS2 is 4.0.9.
+  #
+  # 4.0.3-rev-29Sep13 appears to have CMakeLists.txt patched in but
+  # fails on MSYS2: multiple definition of ua_wcsicmp.
+  set(tiff-contrib OFF)
+  set(tiff-docs OFF)
+  set(tiff-tests OFF)
+  set(tiff-tools OFF)
+  fetchcontent_makeavailable(tiff)
+else()
+  find_package(TIFF REQUIRED)
+  add_library(tiff ALIAS TIFF::TIFF)
+endif()
 
 
 ExternalProject_add(
@@ -653,8 +648,6 @@ endif ()
 #
 # Verify the checksums.  The --binary option appears to be required
 # for patching the test data on MSYS2.
-include(FetchContent)
-
 fetchcontent_declare(data_input
   URL "http://downloads.sf.net/cbflib/CBFlib_${PROJECT_VERSION}_Data_Files_Input.tar.gz"
   URL_HASH MD5=f98ae4214b3e57acb42437ea4b685c4d)
