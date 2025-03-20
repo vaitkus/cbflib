@@ -2049,7 +2049,7 @@ $(BSHUF): $(HDF5)  build_BSHUF $(LZ4dep)
 	mkdir -p $(SOLIB)
 	-rm -rf $(BSHUF)
 	git clone $(BSHUF_URL)
-	(cd $(BSHUF); git submodule update --init; $(PYTHON3): -m build --config-setting=install \
+	(cd $(BSHUF); git submodule update --init; $(PYTHON3) -m build --config-setting=install \
           -C--h5plugin -C--h5plugin-dir=../solib -C--zstd -C--user) 
 	touch $(BSHUF)
 endif
