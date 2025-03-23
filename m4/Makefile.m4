@@ -1,5 +1,5 @@
 m4_define(`cbf_version',`0.9.8')m4_dnl 
-m4_define(`cbf_date',`27 May 2024')m4_dnl 
+m4_define(`cbf_date',`22 Mar 2025')m4_dnl 
 m4_ifelse(cbf_system,`',`m4_define(`cbf_system',`LINUX')') 
 `######################################################################
 #  Makefile - command file for make to create CBFlib                 #
@@ -353,16 +353,24 @@ TIFF_INSTALL = $(TIFF)_INSTALL
 #
 
 ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG),yes)
-SWIG_PREFIX ?= $(PWD)
-SWIG_KIT ?= swig-fortran-swig
+SWIG_PREFIX := $(PWD)
+SWIG_KIT := swig-4.4.0
 else
-SWIG_PREFIX=
-SWIG_KIT=
+SWIG_PREFIX :=
+SWIG_KIT :=
+endif
+
+ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG_FORTRAN),yes)
+SWIG_FORTRAN_PREFIX := $(F90CBF)
+SWIG_FORTRAN_KIT := swig-fortran-swig
+else
+SWIG_FORTRAN_PREFIX :=
+SWIG_FORTRAN_KIT :=
 endif
 
 
 
-#
+
 # Definitions to get a version of HDF5
 #
 
@@ -598,7 +606,7 @@ SHELL = bash
 #
 # Program to display differences between files
 #
-DIFF = diff -u -b
+DIFF = diff -u -b -a
 
 
 #
@@ -606,9 +614,15 @@ DIFF = diff -u -b
 #
 
 ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG),yes)
-SWIG = $(BIN)/swig
+SWIG := $(BIN)/swig
 else
-SWIG = swig
+SWIG := 
+endif
+
+ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG_FORTRAN),yes)
+SWIG_FORTRAN := $(F90CBF)/bin/swig
+else
+SWIG_FORTRAN :=
 endif
 
 #
@@ -624,7 +638,7 @@ JSWIG = $(SWIG) -java
 #
 # Program to generate wrapper module for f90
 #
-F90SWIG = $(SWIG) -fortran
+F90SWIG = $(SWIG_FORTRAN) -fortran
 
 #
 # Java SDK root directory
@@ -1150,8 +1164,12 @@ LZ4_URL		= http://www.github.com/yayahjb/$(LZ4).git
 endif
 BSHUF_URL    = http://www.github.com/yayahjb/$(BSHUF).git
 ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG),yes)
-SWIG_URL     = https://github.com/yayahjb/swig-fortran-swig.git
+SWIG_URL     := https://github.com/swig/swig.git
 endif
+ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG_FORTRAN),yes)
+SWIG_FORTRAN_URL := https://github.com/swig-fortran/swig.git
+endif
+
 
 
 #
@@ -1162,10 +1180,26 @@ INCLUDES = -I$(INCLUDE) -I$(SRC) $(HDF5include)
 #
 # runtime library path export commands
 #
+ifeq ($LD_LIBRARY_PATH)$(DYLD_LIBRARY_PATH)$(LD_RUN_PATH),)
 ifeq ($(HDF5_PREFIX),)
-RTLPEXPORTS = LD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib;export LD_LIBRARY_PATH; DYLD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib;export DYLD_LIBRARY_PATH; LD_RUN_PATH=$(PWD)/solib:$(PWD)/lib;export LD_RUN_PATH;
+RTLPEXPORTS = LD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib;export LD_LIBRARY_PATH;\
+ DYLD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib;export DYLD_LIBRARY_PATH;\
+ LD_RUN_PATH=$(PWD)/solib:$(PWD)/lib;export LD_RUN_PATH;
 else
-RTLPEXPORTS = LD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export LD_LIBRARY_PATH; DYLD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export DYLD_LIBRARY_PATH; LD_RUN_PATH=$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export LD_RUN_PATH;
+RTLPEXPORTS = LD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export LD_LIBRARY_PATH;\
+ DYLD_LIBRARY_PATH=$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export DYLD_LIBRARY_PATH;\
+ LD_RUN_PATH=$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export LD_RUN_PATH;
+endif
+else
+ifeq ($(HDF5_PREFIX),)
+RTLPEXPORTS = LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(PWD)/solib:$(PWD)/lib;export LD_LIBRARY_PATH;\
+ DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):$(PWD)/solib:$(PWD)/lib;export DYLD_LIBRARY_PATH;\
+ LD_RUN_PATH=$(LD_RUN_PATH):$(PWD)/solib:$(PWD)/lib;export LD_RUN_PATH;
+else
+RTLPEXPORTS = LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export LD_LIBRARY_PATH;\
+ DYLD_LIBRARY_PATH=$(DYLD_LIBRARY_PATH):$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export DYLD_LIBRARY_PATH;\
+ LD_RUN_PATH=$(LD_RUN_PATH):$(PWD)/solib:$(PWD)/lib:$(HDF5_PREFIX)/lib;export LD_RUN_PATH;
+endif
 endif
 
 ######################################################################
@@ -1477,7 +1511,8 @@ endif
 
 
 all::	$(BIN) $(SOURCE) $(F90SOURCE) $(HEADERS) \
-	$(SWIG_KIT)           \
+	$(SWIG_FORTRAN_KIT)   \
+        $(SWIG_KIT)           \
 	$(HDF5)               \
 	$(LIBAECDEPS)         \
 	$(LZ4DEPS)            \
@@ -1751,7 +1786,7 @@ baseinstall:  all $(CBF_PREFIX) $(CBF_PREFIX)/lib $(CBF_PREFIX)/bin \
 	-cp $(CBF_PREFIX)/bin/test_cbf_airy_disk $(CBF_PREFIX)/bin/test_cbf_airy_disk_old
 	cp $(BIN)/test_cbf_airy_disk $(CBF_PREFIX)/bin/test_cbf_airy_disk
 	-cp $(CBF_PREFIX)/bin/test_cbf_airy_disk $(CBF_PREFIX)/bin/test_cbf_airy_disk_old
-	cp $(BIN)/test_cbf_airy_disk $(CBF_PREFIX)/bin/test_cbf_airy_disk
+	cp $(BIN)/`:test_cbf_airy_disk $(CBF_PREFIX)/bin/test_cbf_airy_disk
 	-cp $(CBF_PREFIX)/bin/testhdf5 $(CBF_PREFIX)/bin/testhdf5_old
 	cp $(BIN)/testhdf5 $(CBF_PREFIX)/bin/testhdf5
 ifneq ($(CBF_USE_ULP),)
@@ -1805,16 +1840,29 @@ endif
 	chmod 755 $(CBF_PREFIX)/bin/batch_convert_minicbf.sh
 	chmod 644 $(CBF_PREFIX)/include/cbflib/*.h
 
+ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG_FORTRAN),yes)
+#
+# SWIG_FORTRAN_KIT
+#
+build_swig_fortran: $(M4)/Makefile.m4
+	touch build_swig_fortran
+$(SWIG_FORTRAN_KIT):    build_swig_fortran
+	rm -rf $(SWIG_FORTRAN_KIT)
+	git clone $(SWIG_FORTRAN_URL) $(SWIG_FORTRAN_KIT)
+	(export SWIG_FORTRAN_PREFIX=$(PWD);cd $(SWIG_FORTRAN_KIT); ./autogen.sh; \
+	./configure --prefix=$(F90CBF); make; make install) 
+	touch $(SWIG_FORTRAN_KIT)
+endif
+
 ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG),yes)
 #
 # SWIG_KIT
 #
-$(SWIG_KIT):
 build_swig: $(M4)/Makefile.m4
 	touch build_swig
 $(SWIG_KIT):    build_swig
 	rm -rf $(SWIG_KIT)
-	git clone $(SWIG_URL)
+	git clone $(SWIG_URL) $(SWIG_KIT)
 	(export SWIG_PREFIX=$(PWD);cd $(SWIG_KIT); ./autogen.sh; \
 	./configure --prefix=$(SWIG_PREFIX); make; make install) 
 	touch $(SWIG_KIT)
@@ -2415,12 +2463,12 @@ $(SOLIB)/$(SO_LIB_CBF_WRAP): $(JCBF)/cbflib-$(VERSION).jar $(SOLIB)/$(SO_LIB_CBF
 #
 # F90 bindings
 #
-$(F90CBF)/f90cbf.f90 $(F90CBF)/f90cbf_wrap.c $(F90CBF)/f90cbf.mod:  $(F90CBF)/f90cbf.i $(BIN)/convert_f90_swig_wrap
-	$(SWIG) -fortran $(INCLUDES) $(F90CBF)/f90cbf.i
+$(F90CBF)/f90cbf.f90 $(F90CBF)/f90cbf_wrap.c $(F90CBF)/f90cbf.mod:  $(F90CBF)/f90cbf.i $(F90CBF)/bin/convert_f90_swig_wrap
+	$(SWIG_FORTRAN) -fortran $(INCLUDES) $(F90CBF)/f90cbf.i
 	cp $(F90CBF)/f90cbf.f90  $(F90CBF)/f90cbf.f90_orig
 	cp $(F90CBF)/f90cbf_wrap.c  $(F90CBF)/f90cbf_wrap.c_orig
-	(cd $(F90CBF);cat f90cbf.f90_orig | $(BIN)/convert_f90_swig_wrap > f90cbf.f90)
-	(cd $(F90CBF);cat f90cbf_wrap.c_orig | $(BIN)/convert_f90_swig_wrap > f90cbf_wrap.c)
+	(cd $(F90CBF);cat f90cbf.f90_orig | $(F90CBF)/bin/convert_f90_swig_wrap > f90cbf.f90)
+	(cd $(F90CBF);cat f90cbf_wrap.c_orig | $(F90CBF)/bin/convert_f90_swig_wrap > f90cbf_wrap.c)
 
 $(F90CBF)/f90cbf.o:  $(F90CBF)/f90cbf.f90
 	(cd $(F90CBF); $(F90C) -ffree-form -fPIC $(FCFLAGS) -c $(F90CBF)/f90cbf.f90)
@@ -2478,8 +2526,8 @@ $(EXAMPLES)/test_xds_binary.f90: $(M4)/test_xds_binary.m4 $(M4)/fcblib_defines.m
 #
 # convert_f90_swig_wrap program
 #
-$(BIN)/convert_f90_swig_wrap:  $(EXAMPLES)/convert_f90_swig_wrap.cpp
-	mkdir -p $(BIN)
+$(F90CBF)/bin/convert_f90_swig_wrap:  $(EXAMPLES)/convert_f90_swig_wrap.cpp
+	mkdir -p $(F90CBF)/bin
 	$(C++) $(CFLAGS) $(LDFLAGS) $(MISCFLAG) $(INCLUDES) $(WARNINGS) \
 	$(EXAMPLES)/convert_f90_swig_wrap.cpp -L$(LIB)  -o $@
 
@@ -3351,6 +3399,9 @@ empty:
 	@-rm -rf $(BIN)/*
 ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG),yes)
 	@-rm -rf $(SWIG_KIT)
+endif
+ifneq ($(CBFLIB_DONT_USE_LOCAL_SWIG_FORTRAN),yes)
+	@-rm -rf $(SWIG_FORTRAN_KIT)
 endif
 ifneq ($(CBFLIB_DONT_USE_PY2CIFRW),yes)
 	@-rm -f  $(PY2CBF)/_py2cbf.$(PY2CBFEXT)
