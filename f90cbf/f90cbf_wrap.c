@@ -461,7 +461,7 @@ SWIGEXPORT SwigArrayWrapper swigc_CBF_API_VERSION_get_() {
   SwigArrayWrapper fresult ;
   char *result = 0 ;
   
-  result = (char *)("CBFlib v0.9.7");
+  result = (char *)("CBFlib v0.9.8");
   fresult.size = strlen((char*)(result));
   fresult.data = (char *)(result);
   return fresult;
