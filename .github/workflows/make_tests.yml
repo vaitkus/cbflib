@@ -28,14 +28,12 @@ jobs:
         sudo apt-get install -y libjpeg-dev liblzma-dev
     - name: build
       run: |
-        source /usr/share/miniconda/etc/profile.d/conda.sh
         conda activate build
         make all
     - name: test
       run: |
-        source /usr/share/miniconda/etc/profile.d/conda.sh
         conda activate test
         make tests 2>&1 | tee test.out
     - name : check test output
       run: |
-        ! grep ignored test.out
+        ! grep -a ignored test.out
