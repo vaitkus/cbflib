@@ -1,4 +1,4 @@
-[![\[IUCr Home Page\]](html_graphics/iucrhome.jpg)](http://www.iucr.org/iucr-top/welcome.html) [![\[CIF Home Page\]](html_graphics/cifhome.jpg)](http://www.iucr.org/iucr-top/cif/home.html) [![\[CBF/imgCIF\]](html_graphics/CBFbutton.jpg)](cbf_definition_rev.html) ![](html_graphics/cbflibbutton.jpg)
+[![\[IUCr Home Page\]](../html_graphics/iucrhome.jpg)](http://www.iucr.org/iucr-top/welcome.html) [![\[CIF Home Page\]](../html_graphics/cifhome.jpg)](http://www.iucr.org/iucr-top/cif/home.html) [![\[CBF/imgCIF\]](../html_graphics/CBFbutton.jpg)](cbf_definition_rev.html) ![](../html_graphics/cbflibbutton.jpg)
 
 ------------------------------------------------------------------------
 
@@ -6,7 +6,7 @@
 \| [NOTICE](CBFlib_NOTICES.html) \| [GPL](gpl.txt) \| [LGPL](lgpl.txt) \| [imgCIF dictionary](cif_img_1.7.10.html) \|  
 \| [Click Here to Make a Donation](http://arcib.dowling.edu/donation.shtml) \|
 
-![](html_graphics/cbflibbig.jpg)
+![](../html_graphics/cbflibbig.jpg)
 
 ## CBFlib
 
@@ -36,7 +36,7 @@ ALTERNATIVELY YOU MAY REDISTRIBUTE THE CBFLIB API UNDER THE TERMS OF THE [LGPL](
 
 ------------------------------------------------------------------------
 
-### Before using this software, please read the [![NOTICE](html_graphics/noticeButton.jpg)](CBFlib_NOTICES.html) for important disclaimers and the IUCr Policy on the Use of the Crystallographic Information File (CIF) and for other important information.
+### Before using this software, please read the [![NOTICE](../html_graphics/noticeButton.jpg)](CBFlib_NOTICES.html) for important disclaimers and the IUCr Policy on the Use of the Crystallographic Information File (CIF) and for other important information.
 
 Work on imgCIF and CBFlib currentlysupported in part by the the National Institutes of Health under grant R24-GM154040-01 and in the past by U. S. Department of Energy (DOE) under grants ER63601-1021466-0009501 and ER64212-1027708-0011962, by the U. S. National Science Foundation (NSF) under grants DBI-0610407, DBI-0315281 and EF-0312612, the U. S. National Institutes of Health (NIH) under grants 1R15GM078077 from NIGMS and 1R13RR023192 from NCRR and funding from the International Union for Crystallographyn (IUCr). The content is solely the responsibility of the authors and does not necessarily represent the official views of DOE, NSF, NIH, NIGMS, NCRR or IUCr. Recent work on integration among CBF, HDF5 and NeXus supported in part by Pandata ODI (EU 7th Framework Programme)
 
@@ -11637,7 +11637,7 @@ Only chunked data may be written using this filter. The recommended chunk size i
 
 #### <span id="4.">4. Installation</span>
 
-CBFlib should be built on a disk with at least 400 megabytes of free space. [CBFlib-0.9.2.11.tar.gz](CBFlib-0.9.2.11.tar.gz) is a "gzipped" tar of the code as it now stands. Place the gzipped tar in the directory that is intended to contain a new directory, named CBFlib_0.9.2.11 (the "top-level" directory) and uncompress it with gunzip and unpack it with tar:
+CBFlib should be built on a disk with at least 400 megabytes of free space. [CBFlib-0.9.2.11.tar.gz](../CBFlib-0.9.2.11.tar.gz) is a "gzipped" tar of the code as it now stands. Place the gzipped tar in the directory that is intended to contain a new directory, named CBFlib_0.9.2.11 (the "top-level" directory) and uncompress it with gunzip and unpack it with tar:
 
          gunzip CBFlib.tar.gz
          tar xvf CBFLIB.tar
