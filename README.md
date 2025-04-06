@@ -3,7 +3,7 @@
 ------------------------------------------------------------------------
 
 \| [IUCr Home Page](http://www.iucr.org/iucr-top/welcome.html) \| [CIF Home Page](http://www.iucr.org/iucr-top/cif/home.html) \| [CBF/imgCIF](cbf_definition_rev.html) \| CBFlib \|  
-\| [NOTICE](CBFlib_NOTICES.html) \| [GPL](gpl.txt) \| [LGPL](lgpl.txt) \| [imgCIF dictionary](cif_img_1.7.10.html) \|  
+\| [NOTICE](CBFlib_NOTICES.md) \| [GPL](gpl.txt) \| [LGPL](lgpl.txt) \| [imgCIF dictionary](cif_img_1.7.10.html) \|  
 \| [Click Here to Make a Donation](http://arcib.dowling.edu/donation.shtml) \|
 
 ![](html_graphics/cbflibbig.jpg)
@@ -60,7 +60,7 @@ Description
 
   This was the first CBFlib release. It supported binary CBF files using binary strings.
 
-  [0.2](ChangeLog.html#0.2)
+  [0.2](ChangeLog.md#0.2)
 
   Aug. 1998
 
@@ -68,7 +68,7 @@ Description
 
   This release added ascii imgCIF support using MIME-encoded binary sections, added the option of MIME headers for the binary strings was well. MIME code adapted from mpack 1.5. Added hooks needed for DDL1-style names without categories.
 
-  [0.3](ChangeLog.html#0.3)
+  [0.3](ChangeLog.md#0.3)
 
   Sep. 1998
 
@@ -76,7 +76,7 @@ Description
 
   This release cleaned up the changes made for version 0.2, allowing multi-threaded use of the code, and removing dependence on the mpack package.
 
-  [0.4](ChangeLog.html#0.4)
+  [0.4](ChangeLog.md#0.4)
 
   Nov. 1998
 
@@ -84,7 +84,7 @@ Description
 
   This release merged much of the message digest code into the general file reading and writing to reduce the number of passes. More consistency checking between the MIME header and the binary header was introduced. The size in the MIME header was adjusted to agree with the version 0.2 documentation.
 
-  [0.5](ChangeLog.html#0.5)
+  [0.5](ChangeLog.md#0.5)
 
   Dec. 1998
 
@@ -92,7 +92,7 @@ Description
 
   This release greatly increased the speed of processing by allowing for deferred digest evaluation.
 
-  [0.6](ChangeLog.html#0.6)
+  [0.6](ChangeLog.md#0.6)
 
   Jan. 1999
 
@@ -100,7 +100,7 @@ Description
 
   This release removed the redundant information (binary id, size, compression id) from a binary header when there is a MIME header, removed the unused repeat argument, and made the memory allocation for buffering and tables with many rows sensitive to the current memory allocation already used.
 
-  [0.6.1](ChangeLog.html#0.6.1)
+  [0.6.1](ChangeLog.md#0.6.1)
 
   Feb. 2001
 
@@ -108,7 +108,7 @@ Description
 
   This release fixed a memory leak due to misallocation by size of cbf_handle instead of cbf_handle_struct
 
-  [0.7](ChangeLog.html#0.7)
+  [0.7](ChangeLog.md#0.7)
 
   Mar. 2001
 
@@ -116,7 +116,7 @@ Description
 
   This release added high-level instructions based on the imgCIF dictionary version 1.1.
 
-  [0.7.1](ChangeLog.html#0.7.1)
+  [0.7.1](ChangeLog.md#0.7.1)
 
   Mar. 2001
 
@@ -124,7 +124,7 @@ Description
 
   The high-level functions were revised to permit future expansion to files with multiple images.
 
-  [0.7.2](ChangeLog.html#0.7.2)
+  [0.7.2](ChangeLog.md#0.7.2)
 
   Apr. 2001
 
@@ -132,7 +132,7 @@ Description
 
   This release adjusted cbf_cimple.c to conform to cif_img.dic version 1.1.3
 
-  [0.7.2.1](ChangeLog.html#0.7.2.1)
+  [0.7.2.1](ChangeLog.md#0.7.2.1)
 
   May 2001
 
@@ -140,7 +140,7 @@ Description
 
   This release corrected an if nesting error in the prior mod to cbf_cimple.c.
 
-  [0.7.3](ChangeLog.html#0.7.3)
+  [0.7.3](ChangeLog.md#0.7.3)
 
   Oct. 2002
 
@@ -148,7 +148,7 @@ Description
 
   This release modified cbf_simple.c to reorder image data on read so that the indices are always increasing in memory (this behavior was undefined previously).
 
-  [0.7.4](ChangeLog.html#0.7.4)
+  [0.7.4](ChangeLog.md#0.7.4)
 
   Jan 2004
 
@@ -156,7 +156,7 @@ Description
 
   This release fixes a parse error for quoted strings, adds code to get and set character string types, and removes compiler warnings
 
-  [0.7.5](ChangeLog.html#0.7.5)
+  [0.7.5](ChangeLog.md#0.7.5)
 
   Apr 2006
 
@@ -164,7 +164,7 @@ Description
 
   This release cleans up some compiler warnings, corrects a parse error on quoted strings with a leading blank as adds the new routines for support of aliases, dictionaries and real arrays, higher level routines to get and set pixel sizes, do cell computations, and to set beam centers, improves support for conversion of images, picking up more data from headers.
 
-  [0.7.6](ChangeLog.html#0.7.6)
+  [0.7.6](ChangeLog.md#0.7.6)
 
   Jul 2006
 
@@ -172,7 +172,7 @@ Description
 
   This release reorganizes the kit into two pieces: CBFlib_0.7.6_Data_Files and CBFlib_0.7.6. An optional local copy of getopt is added. The 1.4 draft dictionary has been added. cif2cbf updated to support vcif2 validation. convert_image and cif2cbf updated to report text of error messages. convert_image updated to support tag and category aliases, default to adxv images. convert_image and img updated to support row-major images. Support added for binning. API Support added for validation, wide files and line folding. Logic changed for beam center reporting. Added new routines: cbf_validate, cbf_get_bin_sizes, cbf_set_bin_sizes, cbf_find_last_typed_child, cbf_compose_itemname, cbf_set_cbf_logfile, cbf_make_widefile, cbf_read_anyfile, cbf_read_widefile, cbf_write_local_file, cbf_write_widefile, cbf_column_number, cbf_blockitem_number, cbf_log, cbf_check_category_tags, cbf_set_beam_center
 
-  [0.7.7](ChangeLog.html#0.7.7)
+  [0.7.7](ChangeLog.md#0.7.7)
 
   February 2007
 
@@ -180,7 +180,7 @@ Description
 
   This release reflects changes for base 32K support developed by G. Darakev, and changes for support of reals, 3d arrays, byte_offset compression and J. P. Abrahams packed compression made in consultation with (in alphabetic order) E. Eikenberry, A. Hammerley, W. Kabsch, M. Kobas, J. Wright and others at PSI and ESRF in January 2007, as well accumulated changes fixing problems in release 0.7.6.
 
-  [0.7.7.1](ChangeLog.html#0.7.7.1)
+  [0.7.7.1](ChangeLog.md#0.7.7.1)
 
   February 2007
 
@@ -188,7 +188,7 @@ Description
 
   This release is a patch to 0.7.7 to change the treatment of the byteorder parameter from strcpy semantics to return of a pointer to a string constant. Our thanks to E. Eikenberry for pointing out the problem.
 
-  [0.7.7.2](ChangeLog.html#0.7.7.2)
+  [0.7.7.2](ChangeLog.md#0.7.7.2)
 
   February 2007
 
@@ -196,7 +196,7 @@ Description
 
   This release is a patch to 0.7.7.1 to add testing for JPA packed compression and to respect signs declared in the MIME header.
 
-  [0.7.7.3](ChangeLog.html#0.7.7.3)
+  [0.7.7.3](ChangeLog.md#0.7.7.3)
 
   April 2007
 
@@ -204,7 +204,7 @@ Description
 
   This release is a patch to 0.7.7.3 to add f90 support for reading of CBF byte-offset and packed compression, to fix problems with gcc 4.4.1 and to correct errors in multidimensional packed compression.
 
-  [0.7.7.4](ChangeLog.html#0.7.7.4)
+  [0.7.7.4](ChangeLog.md#0.7.7.4)
 
   May 2007
 
@@ -212,7 +212,7 @@ Description
 
   Corrects in handling SLS detector mincbfs and reorder dimensions versus arrays for some f90 compilers as per H. Powell.
 
-  [0.7.7.5](ChangeLog.html#0.7.7.5)
+  [0.7.7.5](ChangeLog.md#0.7.7.5)
 
   May 2007
 
@@ -220,7 +220,7 @@ Description
 
   Fix to cbf_get_image for bug reported by F. Remacle, fixes for windows builds as per J. Wright and F. Remacle.
 
-  [0.7.7.6](ChangeLog.html#0.7.7.6)
+  [0.7.7.6](ChangeLog.md#0.7.7.6)
 
   Jun 2007
 
@@ -228,7 +228,7 @@ Description
 
   Fix to CBF byte-offset compression writes, fix to Makefiles and m4 for f90 test programs to allow adjustable record length.
 
-  [0.7.8](ChangeLog.html#0.7.8)
+  [0.7.8](ChangeLog.md#0.7.8)
 
   Jul 2007
 
@@ -236,7 +236,7 @@ Description
 
   Release for full support of SLS data files with updated convert_minicbf, and support for gfortran from gcc 4.2.
 
-  [0.7.8.1](ChangeLog.html#0.7.8.1)
+  [0.7.8.1](ChangeLog.md#0.7.8.1)
 
   Jul 2007
 
@@ -244,7 +244,7 @@ Description
 
   Update to 0.7.8 release to fix memory leaks reported by N. Sauter and to update validation checks for recent changes.
 
-  [0.7.8.2](ChangeLog.html#0.7.8.2)
+  [0.7.8.2](ChangeLog.md#0.7.8.2)
 
   Dec 2007
 
@@ -252,7 +252,7 @@ Description
 
   Update to 0.7.8.1 to add ADSC jiffie by Chris Nielsen, and to add ...\_fs and ...\_sf macros.
 
-  [0.7.9](ChangeLog.html#0.7.9)
+  [0.7.9](ChangeLog.md#0.7.9)
 
   Dec 2007
 
@@ -260,7 +260,7 @@ Description
 
 Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_frame_data
 
-  [0.7.9.1](ChangeLog.html#0.7.9.1)
+  [0.7.9.1](ChangeLog.md#0.7.9.1)
 
   Jan 2008
 
@@ -268,7 +268,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
   Update to 0.7.8.2 to add inverse ADSC jiffie by Chris Nielsen, to clean up problems in handling maps for RasMol.
 
-  [0.8.0](ChangeLog.html#0.8.0)
+  [0.8.0](ChangeLog.md#0.8.0)
 
   Jul 2008
 
@@ -276,7 +276,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
   Cleanup of 0.7.9.1 to start 0.8 series.
 
-  [0.8.1](ChangeLog.html#0.8.1)
+  [0.8.1](ChangeLog.md#0.8.1)
 
   Jul 2009
 
@@ -284,7 +284,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
    Release with EZ's 2008 DDLm support using JH's PyCifRW, also cbff f95 wrapper code, PC's java bindings.
 
-  [0.9.1](ChangeLog.html#0.9.1)
+  [0.9.1](ChangeLog.md#0.9.1)
 
   Aug 2010
 
@@ -292,7 +292,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
    Release with EE's Dectris template software, also with vcif3, new arvai_test, sequence_match.
 
-  [0.9.2](ChangeLog.html#0.9.2)
+  [0.9.2](ChangeLog.md#0.9.2)
 
   Feb 2011
 
@@ -300,7 +300,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
    New default release with updated pycbf, tiff support, removal of default use of PyCifRW to avoid Fedora license issue.
 
-  [0.9.3](ChangeLog.html#0.9.3)
+  [0.9.3](ChangeLog.md#0.9.3)
 
   Oct 2013
 
@@ -308,7 +308,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
   Added low-level 'cbf_H5\*' functions for interacting with HDF5, higher level functions for converting CBF or miniCBF files to NeXus format, two utility programs to convert CBF or miniCBF files to NeXus format and some unit tests for the low-level 'cbf_H5\*' functions. Add initial FEL detector support.
 
-  [0.9.4](ChangeLog.html#0.9.4)
+  [0.9.4](ChangeLog.md#0.9.4)
 
   March 2014
 
@@ -316,7 +316,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
   Refactored implementation of the NXMX application defintion functional mapping with improvements to cmake support and a preliminary effort at handling Stokes polarization mapping. This release had serious issues in the functional mapping axis mapping and should not be used for production involving NeXus files.
 
-  [0.9.5](ChangeLog.html#0.9.5)
+  [0.9.5](ChangeLog.md#0.9.5)
 
   April 2014
 
@@ -324,7 +324,7 @@ Identical to 0.7.8.2 except for a cleanup of deprecated examples, e.g. diffrn_fr
 
   This is a production release for single detector module single crystal MX NeXus support.
 
-  [0.9.6](ChangeLog.html#0.9.6)
+  [0.9.6](ChangeLog.md#0.9.6)
 
   May 2020
 
@@ -341,7 +341,7 @@ minor cleanup in include/cbf_context.h
 add value clipping to cbf_copy  
 minor cleanuo in cbf_hdf5.h
 
-  [0.9.7](ChangeLog.html#0.9.7)
+  [0.9.7](ChangeLog.md#0.9.7)
 
   June 2021
 
@@ -364,7 +364,7 @@ fix cbf_context.c, cbf_copy.c, cbf_hdf5.c, cbf_hdf5_filter.c, cbf_simple.c, cbf_
 fix fcb_atol_wcnt.f90, fcb_nblen_array.f90, fcb_read_line.f90, fcb_skip_whitespace.f90  
 fix img.c
 
-  [0.9.8](ChangeLog.html#0.9.8)
+  [0.9.8](ChangeLog.md#0.9.8)
 
   April 2025
 
@@ -12028,7 +12028,7 @@ The documentation files are in the "doc" subdirectory:
 
   CBF/ImgCIF extensions dictionary (ASCII)
 
-  ChangeLog,html
+  ChangeLog.html
 
   Summary of change history (HTML)
 
