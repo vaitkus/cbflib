@@ -2468,7 +2468,7 @@ if(CBF_ENABLE_FORTRAN)
     FIXTURES_CLEANUP xds_binary-flat)
 
   add_test(NAME xds_binary-flat-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/test_xds_bin_testflatout_orig.out"
       "${CBF__DATA}/test_xds_bin_testflatout.out")
   set_tests_properties(xds_binary-flat-cmp PROPERTIES
@@ -2495,7 +2495,7 @@ if(CBF_ENABLE_FORTRAN)
     FIXTURES_CLEANUP xds_binary-flatpacked)
 
   add_test(NAME xds_binary-flatpacked-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/test_xds_bin_testflatpackedout_orig.out"
       "${CBF__DATA}/test_xds_bin_testflatpackedout.out")
   set_tests_properties(xds_binary-flatpacked-cmp PROPERTIES
@@ -2522,7 +2522,7 @@ if(CBF_ENABLE_FORTRAN)
     FIXTURES_CLEANUP fcb_read_image-flat)
 
   add_test(NAME fcb_read_image-flat-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/test_fcb_read_testflatout_orig.out"
       "${CBF__DATA}/test_fcb_read_testflatout.out")
   set_tests_properties(fcb_read_image-flat-cmp PROPERTIES
@@ -2549,7 +2549,7 @@ if(CBF_ENABLE_FORTRAN)
     FIXTURES_CLEANUP fcb_read_image-flatpacked)
 
   add_test(NAME fcb_read_image-flatpacked-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/test_fcb_read_testflatpackedout_orig.out"
       "${CBF__DATA}/test_fcb_read_testflatpackedout.out")
   set_tests_properties(fcb_read_image-flatpacked-cmp PROPERTIES
@@ -2635,7 +2635,7 @@ if(CBF_ENABLE_PYTHON)
     FIXTURES_CLEANUP pycbf-test1-standardize-numbers)
 
   add_test(NAME pycbf-test1-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/pycbf_test1_orig.out"
       "${CBF__DATA}/pycbf_test1.out")
   set_tests_properties(pycbf-test1-cmp PROPERTIES
@@ -2675,7 +2675,7 @@ if(CBF_ENABLE_PYTHON)
     FIXTURES_CLEANUP pycbf-test2-standardize-numbers)
 
   add_test(NAME pycbf-test2-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/pycbf_test2_orig.out"
       "${CBF__DATA}/pycbf_test2.out")
   set_tests_properties(pycbf-test2-cmp PROPERTIES
@@ -2726,7 +2726,7 @@ if(CBF_ENABLE_PYTHON)
     FIXTURES_CLEANUP pycbf-test4-standardize-numbers)
 
   add_test(NAME pycbf-test4-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/pycbf_test4_orig.out"
       "${CBF__DATA}/pycbf_test4.out")
   set_tests_properties(pycbf-test4-cmp PROPERTIES
@@ -2765,7 +2765,7 @@ if(CBF_ENABLE_PYTHON)
     FIXTURES_CLEANUP pycbf-fel1-standardize-numbers)
 
   add_test(NAME pycbf-fel1-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/fel_test1_orig.out"
       "${CBF__DATA}/fel_test1.out")
   set_tests_properties(pycbf-fel1-cmp PROPERTIES
@@ -2804,7 +2804,7 @@ if(CBF_ENABLE_PYTHON)
     FIXTURES_CLEANUP pycbf-fel2-standardize-numbers)
 
   add_test(NAME pycbf-fel2-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/fel_test2_orig.out"
       "${CBF__DATA}/fel_test2.out")
   set_tests_properties(pycbf-fel2-cmp PROPERTIES
@@ -2843,7 +2843,7 @@ if(CBF_ENABLE_PYTHON)
     FIXTURES_CLEANUP pycbf-fel3-standardize-numbers)
 
   add_test(NAME pycbf-fel3-cmp
-    COMMAND ${CMAKE_COMMAND} -E compare_files
+    COMMAND ${CMAKE_COMMAND} -E compare_files --ignore-eol
       "${data_output}/fel_test3_orig.out"
       "${CBF__DATA}/fel_test3.out")
   set_tests_properties(pycbf-fel3-cmp PROPERTIES
