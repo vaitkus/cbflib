@@ -318,8 +318,7 @@ set (CBF_CMAKE_DEBUG "ON")
 # Java and Python bindings
 #
 # The Java and Python modules can only be built when BUILD_SHARED_LIBS
-# is set.  On Debian, Java should only require openjdk-17-jdk-headless
-# but AWT requires openjdk-17-jdk?
+# is set, but that is not enforced here.
 if(BUILD_SHARED_LIBS)
   option(CBF_ENABLE_JAVA "Enable Java" ON)
   option(CBF_ENABLE_PYTHON "Enable Python" ON)
@@ -860,8 +859,8 @@ target_include_directories(img
 
 
 #
-# Build all Fortran sources and libraries.  The f90cbf library is not
-# installed.
+# Build Fortran sources, libraries, and examples.  The f90cbf library
+# and the examples for testing are not installed.
 if(CBF_ENABLE_FORTRAN)
   find_program(M4 m4 REQUIRED)
   set(M4FLAGS "-Dfcb_bytes_in_rec=4096" CACHE STRING
@@ -914,6 +913,16 @@ if(CBF_ENABLE_FORTRAN)
   set_target_properties(fcb PROPERTIES LINKER_LANGUAGE C)
   install(TARGETS fcb DESTINATION lib)
 
+  add_executable(test_fcb_read_image
+    "${CMAKE_CURRENT_BINARY_DIR}/src/test_fcb_read_image.f90")
+  target_link_libraries(test_fcb_read_image
+    fcb)
+
+  add_executable(test_xds_binary
+    "${CMAKE_CURRENT_BINARY_DIR}/src/test_xds_binary.f90")
+  target_link_libraries(test_xds_binary
+    fcb)
+
 
   # Use the pre-generated SWIG wrapper, because current SWIG does not
   # support Fortran.
@@ -926,9 +935,10 @@ endif()
 
 
 #
-# Java bindings
-if(CBF_ENABLE_JAVA)
-  # In CMake 3.24, COMPONENTS could be set to "JVM" for FindJNI.
+# Java bindings and examples
+if(BUILD_SHARED_LIBS AND CBF_ENABLE_JAVA)
+  # In CMake 3.24, COMPONENTS could be set to "JVM" for FindJNI,
+  # because AWT is not needed.
   find_package(Java COMPONENTS Development REQUIRED)
   find_package(JNI REQUIRED)
   find_package(SWIG COMPONENTS java REQUIRED)
@@ -941,7 +951,9 @@ if(CBF_ENABLE_JAVA)
   # ${_java_files_generated}, because it would be executed at
   # configuration time, when ${CMAKE_CURRENT_BINARY_DIR}/jcbf may not
   # exist.  get_property(... SWIG_SUPPORT_FILES) only returns
-  # "jcbf/cbf.java" and "jcbf/cbfJNI.java".
+  # "jcbf/cbf.java" and "jcbf/cbfJNI.java"; the contents of
+  # CMakeFiles/cbflib.dir/java_class_filelist do not appear to be
+  # accessible.
   #
   # CMake 3.19 and earlier may not automatically regenerate
   # ${CMAKE_CURRENT_BINARY_DIR}/jcbf for Makefile Generators unless
@@ -955,13 +967,14 @@ if(CBF_ENABLE_JAVA)
     LANGUAGE Java
     OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/jcbf"
     SOURCES "${CBF__SRC}/jcbf.i")
-  set_property(TARGET cbf_wrap PROPERTY
-    SWIG_COMPILE_OPTIONS -package org.iucr.cbflib)
+  set_target_properties(cbf_wrap PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    SWIG_COMPILE_OPTIONS "-package;org.iucr.cbflib")
   target_include_directories(cbf_wrap
     PRIVATE "${JAVA_INCLUDE_PATH}"
             "${JAVA_INCLUDE_PATH2}")
   target_link_libraries(cbf_wrap
-    cbf)
+    PRIVATE cbf)
 
   set(_java_files_generated
     "${CMAKE_CURRENT_BINARY_DIR}/jcbf/CBF_NODETYPE.java"
@@ -992,12 +1005,21 @@ if(CBF_ENABLE_JAVA)
     VERSION "${PROJECT_VERSION}")
   add_dependencies(cbflib
     cbf_wrap)
+
+  add_executable(ctestcbf
+    "${CBF__EXAMPLES}/testcbf.c")
+  target_link_libraries(ctestcbf
+    cbf)
+
+  add_jar(testcbf
+    "${CBF__EXAMPLES}/testcbf.java"
+    INCLUDE_JARS cbflib)
 endif()
 
 
 #
 # Python bindings
-if(CBF_ENABLE_PYTHON)
+if(BUILD_SHARED_LIBS AND CBF_ENABLE_PYTHON)
   # As per Makefile, want links (not lynx) to reduce the diffs against
   # versioned CBFlib.txt.  Need SWIG 4.0.0 or later.  For Python 3,
   # Makefile also adds "# coding=utf-8" to the top of pycbf.py.
@@ -1234,35 +1256,6 @@ add_executable(testreals
   "${CBF__EXAMPLES}/testreals.c")
 target_link_libraries(testreals
   cbf)
-
-
-#
-# F90 examples.  Only for testing, not installed.
-if(CBF_ENABLE_FORTRAN)
-  add_executable(test_fcb_read_image
-    "${CMAKE_CURRENT_BINARY_DIR}/src/test_fcb_read_image.f90")
-  target_link_libraries(test_fcb_read_image
-    fcb)
-
-  add_executable(test_xds_binary
-    "${CMAKE_CURRENT_BINARY_DIR}/src/test_xds_binary.f90")
-  target_link_libraries(test_xds_binary
-    fcb)
-endif()
-
-
-#
-# Java examples
-if(CBF_ENABLE_JAVA)
-  add_executable(ctestcbf
-    "${CBF__EXAMPLES}/testcbf.c")
-  target_link_libraries(ctestcbf
-    cbf)
-
-  add_jar(testcbf
-    "${CBF__EXAMPLES}/testcbf.java"
-    INCLUDE_JARS cbflib)
-endif()
 
 
 #
@@ -2560,13 +2553,12 @@ endif()
 
 #
 # Java tests
-if(CBF_ENABLE_JAVA)
+if(BUILD_SHARED_LIBS AND CBF_ENABLE_JAVA)
   add_test(NAME java-setup-c
     COMMAND ${CMAKE_COMMAND}
-      "-Dcommand=$<TARGET_FILE:ctestcbf>"
+      "-Dcommand=$<TARGET_FILE:ctestcbf>;${CMAKE_CURRENT_SOURCE_DIR}/examples/template_pilatus6m_2463x2527.cbf"
       "-Doutput-file=${CBF__DATA}/testcbfc.txt"
-      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
   set_tests_properties(java-setup-c PROPERTIES
     FIXTURES_SETUP java-setup-c
     REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/examples/template_pilatus6m_2463x2527.cbf")
@@ -2576,13 +2568,35 @@ if(CBF_ENABLE_JAVA)
   set_tests_properties(java-cleanup-c PROPERTIES
     FIXTURES_CLEANUP java-setup-c)
 
+
+  # Tweak PATH to find CBFlib: this appears to be necessary on
+  # Windows, where java.library.path may not be honored for dependent
+  # libraries.  Linux still needs java.library_path.
+  #
+  # CMake 3.22 has path_list_append() for manipulating path lists;
+  # could use $<JOIN:${class_path},${glue}> with that.
+  set(class_path
+    "$<TARGET_PROPERTY:cbflib,JAR_FILE>"
+    "$<TARGET_PROPERTY:testcbf,JAR_FILE>")
+
+  set(library_path
+    "$<TARGET_FILE_DIR:cbf_wrap>"
+    "$<TARGET_FILE_DIR:cbf>"
+    "$ENV{PATH}")
+
+  if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(glue "\;")
+  else()
+    set(glue ":")
+  endif()
+
   add_test(NAME java-setup-java
     COMMAND ${CMAKE_COMMAND}
-      "-Dcommand=${Java_JAVA_EXECUTABLE};-Djava.library.path=${CMAKE_BINARY_DIR}/lib/;-cp;$<TARGET_PROPERTY:cbflib,JAR_FILE>:$<TARGET_PROPERTY:testcbf,JAR_FILE>;testcbf"
+      "-Dcommand=${Java_JAVA_EXECUTABLE};-Djava.library.path=$<TARGET_FILE_DIR:cbf_wrap>;-cp;$<JOIN:${class_path},${glue}>;testcbf;${CMAKE_CURRENT_SOURCE_DIR}/examples/template_pilatus6m_2463x2527.cbf"
       "-Doutput-file=${CBF__DATA}/testcbfj.txt"
-      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
   set_tests_properties(java-setup-java PROPERTIES
+    ENVIRONMENT "PATH=$<JOIN:${library_path},${glue}>"
     FIXTURES_SETUP java-setup-java
     REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/examples/template_pilatus6m_2463x2527.cbf")
 
@@ -2602,7 +2616,7 @@ endif()
 
 #
 # Python tests
-if(CBF_ENABLE_PYTHON)
+if(BUILD_SHARED_LIBS AND CBF_ENABLE_PYTHON)
   add_test(NAME pycbf-test1
     COMMAND Python::Interpreter
       "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test1.py"
