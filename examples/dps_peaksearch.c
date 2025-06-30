@@ -69,6 +69,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "cbf.h"
+#include "cbf_alloc.h"
 #include "dps_peaksearch.h"
 
 
@@ -235,7 +237,6 @@ int dps_peaksearch(unsigned short *data, int nx, int ny,
     int	nxfer;
     DPS_Peak dps_temp;
     int peakfw, peakfh;
-    int next_good_y[nx];
     int collide;
     
     stepx = (min_spacing+1)/2;  /* Initial stepsize for scanning through the image */
@@ -267,6 +268,7 @@ int dps_peaksearch(unsigned short *data, int nx, int ny,
     }
     
     /* Initialize the next_good_y  array to 0 */
+    CBF_START_ARRAY(int, next_good_y, nx);
     for (i=0; i < nx; i++) next_good_y[i]= 0;
     
     /* The next two loops go over the whole frame with stepsize
@@ -444,6 +446,7 @@ int dps_peaksearch(unsigned short *data, int nx, int ny,
             }
         }
     }
+    CBF_END_ARRAY(next_good_y);
     
     if (min_spacing > 0) {
         for(i=0;i<npeaks;i++)
