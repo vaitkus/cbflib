@@ -314,13 +314,14 @@ set (CBF_CMAKE_DEBUG "ON")
 
 
 #
-# Java bindings
+# Java and Python bindings
 #
-# The Java module can only be built when BUILD_SHARED_LIBS is set.  On
-# Debian, Java should only require openjdk-17-jdk-headless but AWT
-# requires openjdk-17-jdk?
+# The Java and Python modules can only be built when BUILD_SHARED_LIBS
+# is set.  On Debian, Java should only require openjdk-17-jdk-headless
+# but AWT requires openjdk-17-jdk?
 if(BUILD_SHARED_LIBS)
   option(CBF_ENABLE_JAVA "Enable Java" ON)
+  option(CBF_ENABLE_PYTHON "Enable Python" ON)
 endif()
 
 
@@ -336,10 +337,24 @@ if (NOT CMAKE_BUILD_TYPE)
 endif (NOT CMAKE_BUILD_TYPE)
 
 
-# Check for missing functions: regcomp(3) is in POSIX.1-2001,
+# Check for missing functions: fgetln(3) is in 4.4BSD; realpath(3) is
+# in 4.4BSD, POSIX.1-2001; regcomp(3) is in POSIX.1-2001,
 # POSIX.1-2008.
 include(CheckSymbolExists)
-check_symbol_exists(regcomp "regex.h" HAVE_REGCOMP)
+check_symbol_exists(fgetln "stdio.h" HAVE_FGETLN)
+if(HAVE_FGETLN)
+  add_compile_definitions("HAVE_FGETLN")
+endif()
+
+check_symbol_exists(realpath "stdlib.h" HAVE_REALPATH)
+if(HAVE_REALPATH)
+  add_compile_definitions("HAVE_REALPATH")
+endif()
+
+check_symbol_exists(regcomp "regex.h" HAVE_REGEX)
+if(HAVE_REGEX)
+  add_compile_definitions("HAVE_REGEX")
+endif()
 
 
 #
@@ -410,7 +425,6 @@ math(EXPR SOVERSION "${_current} - ${_age}")
 
 
 set(BIN       "${CBFlib_BINARY_DIR}/bin" CACHE STRING "")
-set(PYCBF     "${CBFlib_SOURCE_DIR}/pycbf" CACHE STRING "")
 set(EXAMPLES  "${CBFlib_SOURCE_DIR}/examples" CACHE STRING "" )
 set(DECTRIS_EXAMPLES "${EXAMPLES}/dectris_cbf_template_test" CACHE STRING "")
 set(GRAPHICS  "${CBFlib_SOURCE_DIR}/html_graphics" CACHE STRING "")
@@ -449,16 +463,16 @@ fetchcontent_declare(data_output
     -N -i "${CMAKE_CURRENT_SOURCE_DIR}/patches/cbflib-data-output-${PROJECT_VERSION}.patch" -p 1 -t --binary)
 
 fetchcontent_declare(hdf5
-  URL "http://downloads.sf.net/cbflib/hdf5-1.14.4-2.tar.gz"
-  URL_HASH MD5=1791c5f70660bf4ec2e05fc15526c181)
+  URL "https://github.com/HDFGroup/hdf5/releases/download/hdf5_1.14.6/hdf5-1.14.6.tar.gz"
+  URL_HASH MD5=63426c8e24086634eaf9179a8c5fe9e5)
 
-fetchcontent_declare(pcreposix
-  URL "http://downloads.sf.net/cbflib/pcre-8.38.tar.gz"
-  URL_HASH MD5=8a353fe1450216b6655dfcf3561716d9)
+fetchcontent_declare(pcre2
+  URL "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.45/pcre2-10.45.tar.gz"
+  URL_HASH MD5=88fe01e3f2ec144912ebecf7ef5cd595)
 
 fetchcontent_declare(tiff
-  URL "http://downloads.sf.net/cbflib/tiff-4.0.6_rev_3Nov16.tar.gz"
-  URL_HASH MD5=594d1811ce715f7d5ec586bf5e0c4732)
+  URL "https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz"
+  URL_HASH MD5=3a0fa4a270a4a192b08913f88d0cfbdd)
 
 
 #
@@ -539,16 +553,16 @@ if(CBF_WITH_HDF5)
     "HDF5 configured externally")
   set(HDF_PACKAGE_NAMESPACE "hdf5::" CACHE INTERNAL
     "Name for HDF package namespace (can be empty)")
-  set(LIBAEC_TGZ_NAME "libaec-1.0.6.tar.gz" CACHE INTERNAL
+  set(LIBAEC_TGZ_NAME "libaec-1.1.3.tar.gz" CACHE INTERNAL
     "Use SZIP AEC from compressed file")
   set(LIBAEC_TGZ_ORIGPATH
-    "https://github.com/MathisRosenhauer/libaec/releases/download/v1.0.6"
+    "https://github.com/MathisRosenhauer/libaec/releases/download/v1.1.3"
     CACHE INTERNAL
     "Use LIBAEC from original location")
-  set(ZLIB_TGZ_NAME "zlib-1.3.tar.gz" CACHE INTERNAL
+  set(ZLIB_TGZ_NAME "zlib-1.3.1.tar.gz" CACHE INTERNAL
     "Use HDF5_ZLib from compressed file")
   set(ZLIB_TGZ_ORIGPATH
-    "https://github.com/madler/zlib/releases/download/v1.3"
+    "https://github.com/madler/zlib/releases/download/v1.3.1"
     CACHE INTERNAL
     "Use zlib from original location")
   fetchcontent_makeavailable(hdf5)
@@ -561,15 +575,10 @@ if(CBF_WITH_HDF5)
     set(_hdf5_target hdf5-static)
   endif()
 else()
-  if(NOT BUILD_SHARED_LIBS)
-    # HDF5_USE_STATIC_LIBRARIES does not seem to do what it is
-    # supposed to, see
-    # https://gitlab.kitware.com/cmake/cmake/-/issues/24613.
-    set(HDF5_USE_STATIC_LIBRARIES TRUE)
-  endif()
-  find_package(HDF5 REQUIRED)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(hdf5 REQUIRED IMPORTED_TARGET hdf5>=1.10)
   find_program(_h5dump_executable h5dump REQUIRED)
-  set(_hdf5_target hdf5::hdf5)
+  set(_hdf5_target PkgConfig::hdf5)
 endif()
 
 
@@ -584,6 +593,7 @@ endif()
 
 # CBFlib must be compiled with H5_USE_110_API.  With MSVC, also need
 # H5_BUILT_AS_DYNAMIC_LIB if HDF5 is a dynamic library.
+# target_compile_definitions cannot be used on an ALIAS target.
 add_library(hdf5 ALIAS ${_hdf5_target})
 target_compile_definitions(${_hdf5_target}
   INTERFACE H5_USE_110_API)
@@ -594,45 +604,25 @@ endif()
 
 
 #
-# PCRE
-#
-# Linking against an external PCRE1 library (no longer maintained)
-# with a libc that has the regex functions will define regcomp(3),
-# regerror(3), regexec(3), and regfree(3) twice: do not set
-# CBF_WITH_PCRE if libc has the regexec functions.  PCRE2 does it
-# differently: it defines the regex functions prefixed with pcre2_ and
-# maps them onto the unprefixed names with preprocessor directives.
-set(CBF_WITH_PCRE OFF CACHE BOOL
+# PCRE2
+set(CBF_WITH_PCRE2 ON CACHE BOOL
   "Link against internally built Perl-compatible regular expressions library")
-mark_as_advanced(CBF_WITH_PCRE)
+mark_as_advanced(CBF_WITH_PCRE2)
 
-if(CBF_WITH_PCRE)
-  # Do not try to link pcretest against readline, because the PCRE
-  # build system does not catch the libtinfo dependency (for tputs and
-  # friends).  Note that PCRE-8.38 is not using GNUInstallDirs; later
-  # versions may.
-  #
-  # PCRE 8.38 reads the DEBUG_LOCATION property of the pcregrep and
-  # pcretest targets--disable both targets.
-  set(PCRE_BUILD_PCREGREP OFF CACHE INTERNAL "Bulid pcregrep")
-  set(PCRE_BUILD_TESTS OFF CACHE INTERNAL "Build the tests")
-  fetchcontent_makeavailable(pcreposix)
+if(CBF_WITH_PCRE2)
+  set(PCRE2_BUILD_PCRE2GREP OFF CACHE INTERNAL "Build pcre2grep")
+  set(PCRE2_BUILD_TESTS OFF CACHE INTERNAL "Build the tests")
+  fetchcontent_makeavailable(pcre2)
 
-
-  # Always use pcreposix.h from ${pcreposix_SOURCE_DIR} rather than a
-  # system-supplied header.
-  target_include_directories(pcreposix PUBLIC
-    "$<BUILD_INTERFACE:${pcreposix_SOURCE_DIR}>")
-
-elseif(HAVE_REGCOMP)
-  add_library(pcreposix INTERFACE IMPORTED)
-  target_compile_definitions(pcreposix
+elseif(HAVE_REGEX)
+  add_library(pcre2-posix INTERFACE IMPORTED)
+  target_compile_definitions(pcre2-posix
     INTERFACE CBF_REGEXLIB_REGEX)
 
 else()
   find_package(PkgConfig REQUIRED)
-  pkg_check_modules(pcreposix REQUIRED IMPORTED_TARGET libpcreposix)
-  add_library(pcreposix ALIAS PkgConfig::pcreposix)
+  pkg_check_modules(pcre2-posix REQUIRED IMPORTED_TARGET libpcre2-posix)
+  add_library(pcre2-posix ALIAS PkgConfig::pcre2-posix)
 endif()
 
 
@@ -646,25 +636,21 @@ set(CBF_WITH_LIBTIFF ON CACHE BOOL
 mark_as_advanced(CBF_WITH_LIBTIFF)
 
 if(CBF_WITH_LIBTIFF)
-  # The first LibTIFF at https://gitlab.com/libtiff/libtiff with
+  # The first LibTIFF at https://download.osgeo.org/libtiff with
   # native CMake support seems to be 4.0.5.  The first version that
   # builds on current MSYS2 is 4.0.9.
   #
   # 4.0.3-rev-29Sep13 appears to have CMakeLists.txt patched in but
   # fails on MSYS2: multiple definition of ua_wcsicmp.
+  #
+  # 4.0.6_rev_3Nov16 fails on MSYS2: _FILE_OFFSET_BITS not defined
+  #
+  # 4.0.8 fails on MSYS2: _FILE_OFFSET_BITS
   set(tiff-contrib OFF CACHE INTERNAL "Build TIFF contrib")
   set(tiff-docs OFF CACHE INTERNAL "Build TIFF documentation")
   set(tiff-tests OFF CACHE INTERNAL "Build TIFF tests")
   set(tiff-tools OFF CACHE INTERNAL "Build TIFF tools")
   fetchcontent_makeavailable(tiff)
-
-
-  # Always use tiffconf.h and tiffio.h from ${tiff_BUILD_DIR}/libtiff
-  # and ${tiff_SOURCE_DIR}/libtiff, respectively, rather than
-  # system-supplied headers.
-  target_include_directories(tiff PUBLIC
-    "$<BUILD_INTERFACE:${tiff_BINARY_DIR}/libtiff>"
-    "$<BUILD_INTERFACE:${tiff_SOURCE_DIR}/libtiff>")
 
 else()
   # find_package(TIFF) appears to miss the dependencies (Lerc, jbig,
@@ -677,7 +663,7 @@ else()
   # cmake_pkg_config(), because e.g. Debian does not ship CMake config
   # files in their dev packages.
   find_package(PkgConfig REQUIRED)
-  pkg_check_modules(tiff REQUIRED IMPORTED_TARGET libtiff-4)
+  pkg_check_modules(tiff REQUIRED IMPORTED_TARGET libtiff-4>=4.0.10)
   add_library(tiff ALIAS PkgConfig::tiff)
 endif()
 
@@ -834,8 +820,14 @@ include_directories(BEFORE SYSTEM
 # includes hdf5.h.
 add_library(cbf ${CBF_C_SOURCES})
 if(CBF_ENABLE_ULP)
-  target_compile_definitions(cbf PUBLIC CBF_USE_ULP)
-  target_sources(cbf PRIVATE "${CBF__SRC}/cbf_ulp.c")
+  target_compile_definitions(cbf
+    PUBLIC CBF_USE_ULP)
+  target_sources(cbf
+    PRIVATE "${CBF__SRC}/cbf_ulp.c")
+endif()
+if(NOT HAVE_REALPATH)
+  target_sources(cbf
+    PRIVATE "${CBF__SRC}/realpath.c")
 endif()
 
 set_target_properties(cbf PROPERTIES OUTPUT_NAME "cbf")
@@ -843,7 +835,7 @@ set_target_properties(cbf PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(cbf PROPERTIES SOVERSION "${SOVERSION}")
 target_link_libraries(cbf
   PUBLIC hdf5
-  PRIVATE pcreposix
+  PRIVATE pcre2-posix
   PRIVATE ${libm})
 
 
@@ -875,13 +867,14 @@ if(CBF_ENABLE_FORTRAN)
     "${CMAKE_CURRENT_SOURCE_DIR}/m4/test_fcb_read_image.m4"
     "${CMAKE_CURRENT_SOURCE_DIR}/m4/test_xds_binary.m4")
 
-  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src")
   foreach(f90srcm4 IN LISTS f90_sources_m4)
     get_filename_component(filename "${f90srcm4}" NAME_WE)
     set(f90bldsrc "${CMAKE_CURRENT_BINARY_DIR}/src/${filename}.f90")
     add_custom_command(
       OUTPUT "${f90bldsrc}"
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/m4"
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+        "${CMAKE_CURRENT_BINARY_DIR}/src"
       COMMAND ${M4} -P ${M4FLAGS} "${f90srcm4}" > "${f90bldsrc}"
       DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/m4/fcblib_defines.m4"
               "${f90srcm4}"
@@ -988,6 +981,72 @@ endif()
 
 
 #
+# Python bindings
+if(CBF_ENABLE_PYTHON)
+  # As per Makefile, want links (not lynx) to reduce the diffs against
+  # versioned CBFlib.txt.  Need SWIG 4.0.0 or later.  For Python 3,
+  # Makefile also adds "# coding=utf-8" to the top of pycbf.py.
+  find_program(BROWSER_DUMP_TOOL NAMES links lynx elinks)
+  find_package(Python COMPONENTS Development Interpreter REQUIRED)
+  find_package(SWIG COMPONENTS python REQUIRED)
+  include(UseSWIG)
+
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/pycbf/CBFlib.txt"
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    COMMAND ${CMAKE_COMMAND}
+      "-Dcommand=${BROWSER_DUMP_TOOL};-dump;${CMAKE_CURRENT_SOURCE_DIR}/doc/CBFlib.html"
+      "-Doutput-file=${CMAKE_CURRENT_BINARY_DIR}/pycbf/CBFlib.txt"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/doc/CBFlib.html"
+    VERBATIM)
+
+
+  # Generate the SWIG interfaces from CBFlib.txt (so really no need to
+  # keep those under version control).
+  add_custom_command(
+    OUTPUT
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfdetectorwrappers.i"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfgenericwrappers.i"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfgoniometerwrappers.i"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfhandlewrappers.i"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfpositionerwrappers.i"
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/make_pycbf.py"
+      -o "${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/CBFlib.txt"
+    DEPENDS
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/CBFlib.txt"
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/make_pycbf.py"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pycbf")
+
+  set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf.i" PROPERTY
+    DEPENDS
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfdetectorwrappers.i"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfgenericwrappers.i"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfgoniometerwrappers.i"
+      "${CMAKE_CURRENT_BINARY_DIR}/pycbf/cbfhandlewrappers.i")
+  swig_add_library(pycbf
+    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf.i"
+    LANGUAGE Python
+    OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/pycbf")
+  set_target_properties(pycbf PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/pycbf")
+  target_compile_definitions(pycbf
+    PRIVATE SWIG_PYTHON_STRICT_BYTE_CHAR)
+  target_link_libraries(pycbf
+    cbf
+    Python::Module)
+
+  install(
+    TARGETS pycbf
+    COMPONENT "Runtime"
+    DESTINATION "${Python_SITEARCH}")
+endif()
+
+
+#
 #  C and C++ examples
 #
 add_executable(tiff2cbf
@@ -1044,6 +1103,16 @@ add_executable(makecbf
   "${CBF__EXAMPLES}/makecbf.c")
 target_link_libraries(makecbf
   cbf)
+
+add_executable(cbf_standardize_numbers
+  "${CBF__EXAMPLES}/cbf_standardize_numbers.c")
+target_link_libraries(cbf_standardize_numbers
+  cbf
+  "${libm}")
+if(NOT HAVE_FGETLN)
+  target_sources(cbf_standardize_numbers
+    PRIVATE "${CBF__SRC}/fgetln.c")
+endif()
 
 add_executable(cbf_tail
   "${CBF__EXAMPLES}/cbf_tail.c")
@@ -2493,4 +2562,256 @@ if(CBF_ENABLE_JAVA)
       "${CBF__DATA}/testcbfj.txt")
   set_tests_properties(java-cmp PROPERTIES
     FIXTURES_REQUIRED "java-setup-c;java-setup-java")
+endif()
+
+
+#
+# Python tests
+if(CBF_ENABLE_PYTHON)
+  add_test(NAME pycbf-test1
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test1.py"
+      "${CBF__DATA}/img2cif_packed.cif"
+      "${CBF__DATA}/pycbf_test1.raw")
+  set_tests_properties(pycbf-test1 PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    FIXTURES_REQUIRED "img2cif-flatpacked-cif"
+    FIXTURES_SETUP pycbf-test1
+    REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test1.py")
+
+  add_test(NAME pycbf-test1-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/pycbf_test1.raw")
+  set_tests_properties(pycbf-test1-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-test1)
+
+  add_test(NAME pycbf-test1-standardize-numbers
+    COMMAND ${CMAKE_COMMAND}
+      "-Dcommand=$<TARGET_FILE:cbf_standardize_numbers>;-;4"
+      "-Dinput-file=${CBF__DATA}/pycbf_test1.raw"
+      "-Doutput-file=${CBF__DATA}/pycbf_test1.out"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
+  set_tests_properties(pycbf-test1-standardize-numbers PROPERTIES
+    FIXTURES_REQUIRED pycbf-test1
+    FIXTURES_SETUP pycbf-test1-standardize-numbers)
+
+  add_test(NAME pycbf-test1-standardize-numbers-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/pycbf_test1.out")
+  set_tests_properties(pycbf-test1-standardize-numbers-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-test1-standardize-numbers)
+
+  add_test(NAME pycbf-test1-cmp
+    COMMAND ${CMAKE_COMMAND} -E compare_files
+      "${data_output}/pycbf_test1_orig.out"
+      "${CBF__DATA}/pycbf_test1.out")
+  set_tests_properties(pycbf-test1-cmp PROPERTIES
+    FIXTURES_REQUIRED pycbf-test1-standardize-numbers
+    REQUIRED_FILES "${data_output}/pycbf_test1_orig.out")
+
+
+  add_test(NAME pycbf-test2
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test2.py"
+      "${CBF__DATA}/adscconverted.cbf"
+      "${CBF__DATA}/pycbf_test2.raw")
+  set_tests_properties(pycbf-test2 PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    FIXTURES_REQUIRED "convert_image-adscimg"
+    FIXTURES_SETUP pycbf-test2
+    REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test2.py")
+
+  add_test(NAME pycbf-test2-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/pycbf_test2.raw")
+  set_tests_properties(pycbf-test2-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-test2)
+
+  add_test(NAME pycbf-test2-standardize-numbers
+    COMMAND ${CMAKE_COMMAND}
+      "-Dcommand=$<TARGET_FILE:cbf_standardize_numbers>;-;4"
+      "-Dinput-file=${CBF__DATA}/pycbf_test2.raw"
+      "-Doutput-file=${CBF__DATA}/pycbf_test2.out"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
+  set_tests_properties(pycbf-test2-standardize-numbers PROPERTIES
+    FIXTURES_REQUIRED pycbf-test2
+    FIXTURES_SETUP pycbf-test2-standardize-numbers)
+
+  add_test(NAME pycbf-test2-standardize-numbers-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/pycbf_test2.out")
+  set_tests_properties(pycbf-test2-standardize-numbers-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-test2-standardize-numbers)
+
+  add_test(NAME pycbf-test2-cmp
+    COMMAND ${CMAKE_COMMAND} -E compare_files
+      "${data_output}/pycbf_test2_orig.out"
+      "${CBF__DATA}/pycbf_test2.out")
+  set_tests_properties(pycbf-test2-cmp PROPERTIES
+    FIXTURES_REQUIRED pycbf-test2-standardize-numbers
+    REQUIRED_FILES "${data_output}/pycbf_test2_orig.out")
+
+
+  add_test(NAME pycbf-test3
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test3.py")
+  set_tests_properties(pycbf-test3 PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test3.py")
+
+
+  add_test(NAME pycbf-test4
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test4.py"
+      "${CBF__DATA}/img2cif_packed.cif"
+      "${CBF__DATA}/pycbf_test4.raw"
+      "${CBF__DATA}/newtest1.cbf")
+  set_tests_properties(pycbf-test4 PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    FIXTURES_REQUIRED "img2cif-flatpacked-cif"
+    FIXTURES_SETUP pycbf-test4
+    REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_test4.py")
+
+  add_test(NAME pycbf-test4-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm
+      "${CBF__DATA}/pycbf_test4.raw"
+      "${CBF__DATA}/newtest1.cbf")
+  set_tests_properties(pycbf-test4-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-test4)
+
+  add_test(NAME pycbf-test4-standardize-numbers
+    COMMAND ${CMAKE_COMMAND}
+      "-Dcommand=$<TARGET_FILE:cbf_standardize_numbers>;-;4"
+      "-Dinput-file=${CBF__DATA}/pycbf_test4.raw"
+      "-Doutput-file=${CBF__DATA}/pycbf_test4.out"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
+  set_tests_properties(pycbf-test4-standardize-numbers PROPERTIES
+    FIXTURES_REQUIRED pycbf-test4
+    FIXTURES_SETUP pycbf-test4-standardize-numbers)
+
+  add_test(NAME pycbf-test4-standardize-numbers-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/pycbf_test4.out")
+  set_tests_properties(pycbf-test4-standardize-numbers-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-test4-standardize-numbers)
+
+  add_test(NAME pycbf-test4-cmp
+    COMMAND ${CMAKE_COMMAND} -E compare_files
+      "${data_output}/pycbf_test4_orig.out"
+      "${CBF__DATA}/pycbf_test4.out")
+  set_tests_properties(pycbf-test4-cmp PROPERTIES
+    FIXTURES_REQUIRED pycbf-test4-standardize-numbers
+    REQUIRED_FILES "${data_output}/pycbf_test4_orig.out")
+
+
+  add_test(NAME pycbf-fel1
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_testfelaxes.py"
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/fel_test1.cbf"
+      "${CBF__DATA}/fel_test1.raw")
+  set_tests_properties(pycbf-fel1 PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    FIXTURES_SETUP pycbf-fel1
+    REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/fel_test1.cbf")
+
+  add_test(NAME pycbf-fel1-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/fel_test1.raw")
+  set_tests_properties(pycbf-fel1-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-fel1)
+
+  add_test(NAME pycbf-fel1-standardize-numbers
+    COMMAND ${CMAKE_COMMAND}
+      "-Dcommand=$<TARGET_FILE:cbf_standardize_numbers>;-;4"
+      "-Dinput-file=${CBF__DATA}/fel_test1.raw"
+      "-Doutput-file=${CBF__DATA}/fel_test1.out"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
+  set_tests_properties(pycbf-fel1-standardize-numbers PROPERTIES
+    FIXTURES_REQUIRED pycbf-fel1
+    FIXTURES_SETUP pycbf-fel1-standardize-numbers)
+
+  add_test(NAME pycbf-fel1-standardize-numbers-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/fel_test1.out")
+  set_tests_properties(pycbf-fel1-standardize-numbers-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-fel1-standardize-numbers)
+
+  add_test(NAME pycbf-fel1-cmp
+    COMMAND ${CMAKE_COMMAND} -E compare_files
+      "${data_output}/fel_test1_orig.out"
+      "${CBF__DATA}/fel_test1.out")
+  set_tests_properties(pycbf-fel1-cmp PROPERTIES
+    FIXTURES_REQUIRED pycbf-fel1-standardize-numbers
+    REQUIRED_FILES "${data_output}/fel_test1_orig.out")
+
+
+  add_test(NAME pycbf-fel2
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_testfelaxes.py"
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/fel_test2.cbf"
+      "${CBF__DATA}/fel_test2.raw")
+  set_tests_properties(pycbf-fel2 PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    FIXTURES_SETUP pycbf-fel2
+    REQUIRED_FILES "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/fel_test2.cbf")
+
+  add_test(NAME pycbf-fel2-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/fel_test2.raw")
+  set_tests_properties(pycbf-fel2-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-fel2)
+
+  add_test(NAME pycbf-fel2-standardize-numbers
+    COMMAND ${CMAKE_COMMAND}
+      "-Dcommand=$<TARGET_FILE:cbf_standardize_numbers>;-;4"
+      "-Dinput-file=${CBF__DATA}/fel_test2.raw"
+      "-Doutput-file=${CBF__DATA}/fel_test2.out"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
+  set_tests_properties(pycbf-fel2-standardize-numbers PROPERTIES
+    FIXTURES_REQUIRED pycbf-fel2
+    FIXTURES_SETUP pycbf-fel2-standardize-numbers)
+
+  add_test(NAME pycbf-fel2-standardize-numbers-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/fel_test2.out")
+  set_tests_properties(pycbf-fel2-standardize-numbers-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-fel2-standardize-numbers)
+
+  add_test(NAME pycbf-fel2-cmp
+    COMMAND ${CMAKE_COMMAND} -E compare_files
+      "${data_output}/fel_test2_orig.out"
+      "${CBF__DATA}/fel_test2.out")
+  set_tests_properties(pycbf-fel2-cmp PROPERTIES
+    FIXTURES_REQUIRED pycbf-fel2-standardize-numbers
+    REQUIRED_FILES "${data_output}/fel_test2_orig.out")
+
+
+  add_test(NAME pycbf-fel3
+    COMMAND Python::Interpreter
+      "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf_testfelaxes.py"
+      "${data_input}/hit-20140306005258847.cbf"
+      "${CBF__DATA}/fel_test3.raw")
+  set_tests_properties(pycbf-fel3 PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/pycbf"
+    FIXTURES_SETUP pycbf-fel3
+    REQUIRED_FILES "${data_input}/hit-20140306005258847.cbf")
+
+  add_test(NAME pycbf-fel3-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/fel_test3.raw")
+  set_tests_properties(pycbf-fel3-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-fel3)
+
+  add_test(NAME pycbf-fel3-standardize-numbers
+    COMMAND ${CMAKE_COMMAND}
+      "-Dcommand=$<TARGET_FILE:cbf_standardize_numbers>;-;4"
+      "-Dinput-file=${CBF__DATA}/fel_test3.raw"
+      "-Doutput-file=${CBF__DATA}/fel_test3.out"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/redirect.cmake")
+  set_tests_properties(pycbf-fel3-standardize-numbers PROPERTIES
+    FIXTURES_REQUIRED pycbf-fel3
+    FIXTURES_SETUP pycbf-fel3-standardize-numbers)
+
+  add_test(NAME pycbf-fel3-standardize-numbers-cleanup
+    COMMAND ${CMAKE_COMMAND} -E rm "${CBF__DATA}/fel_test3.out")
+  set_tests_properties(pycbf-fel3-standardize-numbers-cleanup PROPERTIES
+    FIXTURES_CLEANUP pycbf-fel3-standardize-numbers)
+
+  add_test(NAME pycbf-fel3-cmp
+    COMMAND ${CMAKE_COMMAND} -E compare_files
+      "${data_output}/fel_test3_orig.out"
+      "${CBF__DATA}/fel_test3.out")
+  set_tests_properties(pycbf-fel3-cmp PROPERTIES
+    FIXTURES_REQUIRED pycbf-fel3-standardize-numbers
+    REQUIRED_FILES "${data_output}/fel_test3_orig.out")
 endif()

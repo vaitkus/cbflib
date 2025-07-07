@@ -344,7 +344,7 @@ endif
 #
 # Definition to get a version of tifflib to support tiff2cbf
 #
-TIFF ?= tiff-4.0.6_rev_3Nov16
+TIFF ?= tiff-4.7.0
 TIFF_PREFIX ?= $(PWD)
 TIFF_INSTALL = $(TIFF)_INSTALL
 
@@ -381,10 +381,8 @@ endif
 
 ifneq ("$(CBFLIB_DONT_USE_LOCAL_HDF5)","yes")
   HDF5_PREFIX ?= $(PWD)
-  HDF5 ?= hdf5-1.14.4-2
-  ifeq ("$(HDF5)","hdf5-1.14.4-2")
-    HDF5CFLAGS=-DH5_USE_110_API
-  endif
+  HDF5 ?= hdf5-1.14.6
+  HDF5CFLAGS=-DH5_USE_110_API
   HDF5dep = $(HDF5)
   HDF5_INSTALL = $(HDF5)_INSTALL
   ifneq ("$(MSYS2)","yes")
@@ -525,16 +523,15 @@ endif
 
 REGEX_LIBDIR ?= $(REGEX_PREFIX)/lib
 ifneq ($(CBFLIB_DONT_USE_LOCAL_REGEX),yes)
-REGEX ?= pcre-8.38
+REGEX ?= pcre2-10.45
 REGEXDEP = $(REGEX)
 REGEX_INSTALL = $(REGEX)_INSTALL
-REGEX_LIB ?= pcreposix
-REGEX_LIB2 ?= pcre
+REGEX_LIB ?= pcre2-posix
 ifneq ($(MSYS2),yes)
-REGEX_LIBS ?= -L $(REGEX_LIBDIR) -l$(REGEX_LIB) -l$(REGEX_LIB2)
-REGEX_LIBS_STATIC = $(LIB)/libpcreposix.a $(LIB)/libpcre.a
+REGEX_LIBS ?= -L $(REGEX_LIBDIR) -l$(REGEX_LIB)
+REGEX_LIBS_STATIC = $(LIB)/libpcre2-posix.a $(LIB)/libpcre2-8.a
 else
-REGEX_LIBS ?= -L $(REGEX_LIBDIR) -l$(REGEX_LIB) -l$(REGEX_LIB).dll -l$(REGEX_LIB2) -l$(REGEX_LIB2).dll
+REGEX_LIBS ?= -L $(REGEX_LIBDIR) -l$(REGEX_LIB) -l$(REGEX_LIB).dll
 REGEX_LIBS_STATIC = $(REGEX_LIBS)
 endif
 REGEX_INCLUDES ?= -I $(REGEX_PREFIX)
@@ -543,7 +540,6 @@ REGEX =
 REGEXDEP =
 REGEX_INSTALL =
 REGEX_LIB ?=
-REGEX_LIB2 ?=
 REGEX_LIBS ?=
 REGEX_INCLUDES ?=
 endif
@@ -581,7 +577,7 @@ RANLIB  = /usr/bin/ranlib
 #
 #SIGNATURE ?= /usr/bin/openssl dgst -md5
 #SIGNATURE ?= (/usr/bin/openssl dgst -md5 | sed "s/^.*= //")
-SIGNATURE ?= ( cat > md5tmp; cmake -E md5sum md5tmp| sed "s/ .*//")
+SIGNATURE ?= ( cat > md5tmp; md5sum md5tmp| sed "s/ .*//")
 
 #
 # Pipe command to extract all but the first line of a text file
@@ -676,7 +672,7 @@ endif
 ifneq ($(CBF_NO_REGEX),)
 CBF_REGEXFLAG = -DCBF_NO_REGEX
 else
-CBF_REGEXFLAG = -DCBF_REGEXLIB_REGEX
+CBF_REGEXFLAG = -DHAVE_REGEX
 endif
 
 ifneq ($(CBF_USE_ULP),)
@@ -747,7 +743,7 @@ endif
 #########################################################
 CC	= gcc
 C++	= g++
-CFLAGS  = -g -O2 -Wall -std=c99 -pedantic $(HDF5CFLAGS)
+CFLAGS  = -g -O2 -Wall -std=c99 -pedantic -DHAVE_REALPATH $(HDF5CFLAGS)
 LDFLAGS =
 F90C = gfortran
 #F90FLAGS = -g -fno-range-check -fallow-invalid-boz
@@ -773,7 +769,7 @@ cbf_system,`OSX_gcc42',`
 #########################################################
 CC	= gcc
 C++	= g++
-CFLAGS  = -g -O2 -Wall -std=c99 -pedantic $(HDF5CFLAGS)
+CFLAGS  = -g -O2 -Wall -std=c99 -pedantic -DHAVE_REALPATH $(HDF5CFLAGS)
 LDFLAGS =
 F90C = gfortran
 #F90FLAGS = -g -fno-range-check -fallow-invalid-boz
@@ -799,7 +795,7 @@ cbf_system,`OSX_gcc42_DMALLOC',`
 #########################################################
 CC	= gcc
 C++	= g++
-CFLAGS  = -g -O2 -Wall -std=c99 -pedantic -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(HOME)/include $(HDF5CFLAGS)
+CFLAGS  = -g -O2 -Wall -std=c99 -pedantic -DDMALLOC -DDMALLOC_FUNC_CHECK -DHAVE_REALPATH -I$(HOME)/include $(HDF5CFLAGS)
 LDFLAGS =
 F90C = gfortran
 #F90FLAGS = -g -fno-range-check -fallow-invalid-boz
@@ -826,7 +822,7 @@ cbf_system,`LINUX_64',`
 #########################################################
 CC	= gcc -m64
 C++	= g++ -m64
-CFLAGS  = -g -O2 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
+CFLAGS  = -g -O2 -Wall -DHAVE_REALPATH -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
 LDFLAGS =
 F90C = gfortran -m64
 #F90FLAGS = -g -fno-range-check -fallow-invalid-boz
@@ -854,7 +850,7 @@ cbf_system,`LINUX_gcc42',`
 #########################################################
 CC	= gcc
 C++	= g++
-CFLAGS  = -g -O2 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
+CFLAGS  = -g -O2 -Wall -DHAVE_REALPATH -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
 LDFLAGS =
 F90C = gfortran
 #F90FLAGS = -g -fno-range-check -fallow-invalid-boz
@@ -881,7 +877,7 @@ cbf_system,`LINUX',`
 #########################################################
 CC	= gcc
 C++	= g++
-CFLAGS  = -g -O2 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
+CFLAGS  = -g -O2 -Wall -DHAVE_REALPATH -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
 LDFLAGS =
 F90C = gfortran
 #F90FLAGS = -g -fno-range-check -fallow-invalid-boz
@@ -909,7 +905,7 @@ cbf_system,`LINUX_gcc42_DMALLOC', `
 #########################################################
 CC	= gcc
 C++	= g++
-CFLAGS  = -g -O2 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing \
+CFLAGS  = -g -O2 -Wall -DHAVE_REALPATH -D_USE_XOPEN_EXTENDED -fno-strict-aliasing \
 	  -DDMALLOC -DDMALLOC_FUNC_CHECK  $(HDF5CFLAGS)  -I$(HOME)/include
 LDFLAGS =
 F90C = gfortran
@@ -936,7 +932,7 @@ cbf_system,`LINUX_DMALLOC',`
 #########################################################
 CC	= gcc
 C++	= g++
-CFLAGS  = -g -O2 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing \
+CFLAGS  = -g -O2 -Wall -DHAVE_REALPATH -D_USE_XOPEN_EXTENDED -fno-strict-aliasing \
 	  -DDMALLOC -DDMALLOC_FUNC_CHECK   $(HDF5CFLAGS) -I$(HOME)/include
 LDFLAGS =
 F90C = gfortran
@@ -1109,9 +1105,9 @@ RANLIB  = ',
 CC	= gcc
 C++	= g++
 ifneq ($(CBFDEBUG),)
-CFLAGS  = -g -O0 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DCBFDEBUG=1  $(HDF5CFLAGS)
+CFLAGS  = -g -O0 -Wall -DHAVE_REALPATH -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DCBFDEBUG=1  $(HDF5CFLAGS)
 else
-CFLAGS  = -g -O3 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
+CFLAGS  = -g -O3 -Wall -DHAVE_REALPATH -D_USE_XOPEN_EXTENDED -fno-strict-aliasing  $(HDF5CFLAGS)
 endif
 LDFLAGS =
 F90C = gfortran
@@ -1154,9 +1150,9 @@ ifneq ($(CBFLIB_DONT_USE_PY3CIFRW),yes)
 PY3CIFRWURL     = http://downloads.sf.net/cbflib/$(PY3CIFRW).tar.gz
 PY3PLYURL       = http://downloads.sf.net/cbflib/$(PY3PLY).tar.gz
 endif
-REGEX_URL	?= http://downloads.sf.net/cbflib/$(REGEX).tar.gz
-TIFF_URL	?= http://downloads.sf.net/cbflib/$(TIFF).tar.gz
-HDF5_URL	?= http://downloads.sf.net/cbflib/$(HDF5).tar.gz
+REGEX_URL	?= https://github.com/PCRE2Project/pcre2/releases/download/$(REGEX)/$(REGEX).tar.gz
+TIFF_URL	?= https://download.osgeo.org/libtiff/$(TIFF).tar.gz
+HDF5_URL	?= https://github.com/HDFGroup/hdf5/releases/download/hdf5_1.14.6/$(HDF5).tar.gz
 ifneq ($(CBFLIB_DONT_USE_LOCAL_NUWEB),yes)
 NUWEB_URL	?= http://downloads.sf.net/cbflib/$(NUWEB_DEP).tar.gz
 endif
@@ -1424,7 +1420,7 @@ default:
 	@echo ''`   NUWEB_DEP = $(NUWEB_DEP)''`
 	@echo ''`   NUWEB_DEP2 = $(NUWEB_DEP2)''`
 	@echo ''` ''`
-	@echo ''` You will need either a system HDF5 1.12 or it to be installed here.''`
+	@echo ''` You will need either a system HDF5 >=1.10 or it to be installed here.''`
 	@echo ''` Check that CBFLIB_DONT_USE_LOCAL_HDF5 and HDF5 are defined correctly :''`
 	@echo ''` ''`
 	@echo ''` The current values are:''`
@@ -1980,13 +1976,13 @@ $(REGEX):   build_regex
 	(cd $(REGEX); \
 	prefix=$(REGEX_PREFIX); export prefix; \
 	./configure --prefix=$(REGEX_PREFIX); make install)
-	@-cp $(REGEX_PREFIX)/include/pcreposix.h $(REGEX_PREFIX)/include/regex.h
+	@-cp $(REGEX_PREFIX)/include/pcre2posix.h $(REGEX_PREFIX)/include/regex.h
 $(REGEX)_INSTALL:   $(REGEX)
 	-rm -rf $(REGEX)_install
 	rsync -avz $(REGEX)/ $(REGEX)_install
 	(cd $(REGEX)_install; prefix=$(CBF_PREFIX); export prefix; \
 	make distclean; ./configure --prefix=$(CBF_PREFIX); make install )
-	@-cp $(CBF_PREFIX)/include/pcreposix.h $(CBF_PREFIX)/include/regex.h
+	@-cp $(CBF_PREFIX)/include/pcre2posix.h $(CBF_PREFIX)/include/regex.h
 
 #
 # TIFF
@@ -2344,12 +2340,12 @@ $(PY2CBF)/py2cbfuserinstall: $(PY2CBF)/pycbf.py
 	(cd $(PY2CBF); $(PYTHON2) $(PY2INSTALLSETUP_PY) install $(PY2CBFIOPT) --user)
 
 $(PY2CBF)/py2setup.py: $(PY2CBF)/py2setup_py.m4
-	(m4 -P -Dregexlib=$(REGEX_LIB) -Dregexlib2=$(REGEX_LIB2) \
+	(m4 -P -Dregexlib=$(REGEX_LIB) \
 	   -Dregexlibdir=$(REGEX_LIBDIR) -Dhdf5_prefix=$(HDF5_PREFIX) \
 	   $(PY2CBF)/py2setup_py.m4 > $@)
 
 $(PY2CBF)/py2setup_MINGW.py: $(PY2CBF)/setup_py.m4
-	   (m4 -P -Dregexlib=$(REGEX_LIB) -Dregexlib2=$(REGEX_LIB2) \
+	   (m4 -P -Dregexlib=$(REGEX_LIB) \
 	   -Dregexlibdir=$(REGEX_LIBDIR) -Dhdf5_prefix=$(HDF5_PREFIX) \
 	   $(PY2CBF)/py2setup_py.m4 > $@)
 
@@ -2417,12 +2413,12 @@ $(PY3CBF)/py3cbfuserinstall: $(PY3CBF)/pycbf.py
 	(cd $(PY3CBF); $(PYTHON3) $(PY3INSTALLSETUP_PY) install $(PY3CBFIOPT) --user)
 
 $(PY3CBF)/py3setup.py: $(PY3CBF)/py3setup_py.m4
-	(m4 -P -Dregexlib=$(REGEX_LIB) -Dregexlib2=$(REGEX_LIB2) \
+	(m4 -P -Dregexlib=$(REGEX_LIB) \
 	   -Dregexlibdir=$(REGEX_LIBDIR) -Dhdf5_prefix=$(HDF5_PREFIX) \
 	   $(PY3CBF)/py3setup_py.m4 > $@)
 
 $(PY3CBF)/py3setup_MINGW.py: $(PY3CBF)/py3setup_py.m4
-	   (m4 -P -Dregexlib=$(REGEX_LIB) -Dregexlib2=$(REGEX_LIB2) \
+	   (m4 -P -Dregexlib=$(REGEX_LIB) \
 	   -Dregexlibdir=$(REGEX_LIBDIR) -Dhdf5_prefix=$(HDF5_PREFIX) \
 	   $(PY3CBF)/py3setup_py.m4 > $@)
 
@@ -3334,25 +3330,23 @@ endif
 
 ifneq ($(CBFLIB_DONT_USE_PY3CIFRW),yes)
 py3cbftests:  $(PY3CBF)/_pycbf.$(PY3CBFEXT) $(BIN)/cbf_standardize_numbers $(TESTOUTPUT)
-	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_test1.py | $(BIN)/cbf_standardize_numbers - 4 > pycbf_test1.out)
+	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_test1.py ../img2cif_packed.cif pycbf_test1.raw; cat pycbf_test1.raw | $(BIN)/cbf_standardize_numbers - 4 > pycbf_test1.out)
 	-(cd $(PY3CBF); grep -v "__builtins__" $(ROOT)/pycbf_test1_orig.out | \
 	  grep -v "__add__" | grep -v "Foundthebinary" > pycbf_test1_orig.out; \
-	  grep -v "__builtins__"  pycbf_test1.out | \
-	  grep -v "__add__" | grep -v "Foundthebinary" |$(DIFF) - pycbf_test1_orig.out)
-	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_test2.py | $(BIN)/cbf_standardize_numbers - 4 > pycbf_test2.out)
+	  $(DIFF) pycbf_test1.out pycbf_test1_orig.out)
+	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_test2.py ../adscconverted.cbf pycbf_test2.raw; cat pycbf_test2.raw | $(BIN)/cbf_standardize_numbers - 4 > pycbf_test2.out)
 	-(cd $(PY3CBF); $(DIFF) pycbf_test2.out $(ROOT)/pycbf_test2_orig.out)
 	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_test3.py | $(BIN)/cbf_standardize_numbers - 4 > pycbf_test3.out)
 	-(cd $(PY3CBF); $(DIFF) pycbf_test3.out $(ROOT)/pycbf_test3_orig.out)
-	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_test4.py | $(BIN)/cbf_standardize_numbers - 4 > pycbf_test4.out)
+	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_test4.py ../img2cif_packed.cif pycbf_test4.raw newtest1.cbf; cat pycbf_test4.raw | $(BIN)/cbf_standardize_numbers - 4 > pycbf_test4.out)
 	-(cd $(PY3CBF); grep -v "__builtins__" $(ROOT)/pycbf_test4_orig.out | \
 	  grep -v "__add__" | grep -v "Foundthebinary" > pycbf_test4_orig.out; \
-	  grep -v "__builtins__"  pycbf_test4.out | grep -v "__add__" | \
-	  grep -v "Foundthebinary" | $(DIFF) - pycbf_test4_orig.out)
-	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_testfelaxes.py fel_test1.cbf | $(BIN)/cbf_standardize_numbers - 4 > fel_test1.out)
+	  $(DIFF) pycbf_test4.out pycbf_test4_orig.out)
+	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_testfelaxes.py fel_test1.cbf fel_test1.raw; cat fel_test1.raw | $(BIN)/cbf_standardize_numbers - 4 > fel_test1.out)
 	-(cd $(PY3CBF); $(DIFF) fel_test1.out $(ROOT)/fel_test1_orig.out)
-	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_testfelaxes.py fel_test2.cbf | $(BIN)/cbf_standardize_numbers - 4 > fel_test2.out)
+	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_testfelaxes.py fel_test2.cbf fel_test2.raw; cat fel_test2.raw | $(BIN)/cbf_standardize_numbers - 4 > fel_test2.out)
 	-(cd $(PY3CBF); $(DIFF) fel_test2.out $(ROOT)/fel_test2_orig.out)
-	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_testfelaxes.py ../hit-20140306005258847.cbf | $(BIN)/cbf_standardize_numbers - 4 > fel_test3.out)
+	($(RTLPEXPORTS) cd $(PY3CBF); $(PYTHON3) $(PY3CBF)/pycbf_testfelaxes.py ../hit-20140306005258847.cbf fel_test3.raw; cat fel_test3.raw | $(BIN)/cbf_standardize_numbers - 4 > fel_test3.out)
 	-(cd $(PY3CBF); $(DIFF) fel_test3.out $(ROOT)/fel_test3_orig.out)
 
 py3cbfinstall: $(PY3CBF)/_pycbf.$(PY3CBFEXT) $(PY3CBF)/py3cbfinstall
@@ -3511,7 +3505,7 @@ endif
 	@-rm -f include/pcre_stringpiece.h
 	@-rm -f include/pcrecpp.h
 	@-rm -f include/pcrecpparg.h
-	@-rm -f include/pcreposix.h
+	@-rm -f include/pcre2posix.h
 	@-rm -f include/regex.h
 	@-rm -f minicbf_test/X4_lots_M1S4_1_0001.cbf
 	@-rm -f minicbf_test/X4_lots_M1S4_1_0002.cbf
