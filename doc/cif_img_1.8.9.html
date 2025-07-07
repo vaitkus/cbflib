@@ -201,8 +201,8 @@ data_cif_img.dic
 #             and Crystallographic Binary File Dictionary (CBF)              #
 #            Extending the Macromolecular CIF Dictionary (mmCIF)             #
 #                                                                            #
-#                              Version 1.8.9                                 #
-#                              of 2025-06-10                                 #
+#                             Version 1.8.9.2                                #
+#                              of 2025-07-05                                 #
 #<a href="javascript:;" onclick="open_all();"><tt>++</tt></a>/<a href="javascript:;" onclick="close_all();"><tt>--</tt></a>                                                                       #
 <a href="javascript:;"  onclick="open_close('title1');" ><tt>#+/-</tt></a>                                                                         #
 <div id="title1" style="display:none">#    ###################################################################     #
@@ -2089,7 +2089,7 @@ save_<a name="_array_data_external_data.archive_format" >_array_data_external_da
 
     _item.name                 '<a href="#_array_data_external_data.archive_format" >_array_data_external_data.archive_format</a>'
     _item.category_id            <a href="#array_data_external_data">array_data_external_data</a>
-    _item.type_code              code
+    _item_type.code              code
     _item_default.value          .
 
     loop_
@@ -2130,7 +2130,7 @@ save_<a name="_array_data_external_data.file_compression">_array_data_external_d
     _item.name                 '<a href="#_array_data_external_data.file_compression" >_array_data_external_data.file_compression</a>'
     _item.category_id            <a href="#array_data_external_data">array_data_external_data</a>
     _item.mandatory_code         no
-    _item.type_code              code
+    _item_type.code              code
     _item_default.value          .
 
     loop_
@@ -2208,7 +2208,7 @@ save_<a name="_array_data_external_data.format" >_array_data_external_data.forma
     _item.name                 '<a href="#_array_data_external_data.format" >_array_data_external_data.format</a>'
     _item.category_id            <a href="#array_data_external_data">array_data_external_data</a>
     _item.mandatory_code         no
-    _item.type_code              code
+    _item_type.code              code
 
     loop_
     _item_enumeration.value
@@ -6257,6 +6257,7 @@ save_<a name="_axis.depends_on" >_axis.depends_on</a>
     _item.name                      '<a href="#_axis.depends_on">_axis.depends_on</a>'
     _item.category_id                 axis
     _item.mandatory_code              no
+    _item_type.code                   code
      save_
 
 
@@ -11758,6 +11759,7 @@ save_<a name="_diffrn_source.diffrn_id">_diffrn_source.diffrn_id</a>
 
    _item.name                 '<a href="#_diffrn_source.diffrn_id">_diffrn_source.diffrn_id</a>'
    _item.mandatory_code         yes
+   _item_type.code              code
 
    _item_aliases.alias_name   '_diffrn_source.diffrn_id'
    _item_aliases.dictionary     mmcif_pdbx.dic
@@ -13441,6 +13443,15 @@ save_<a name="_diffrn_frame_data.details" >_diffrn_frame_data.details</a>
     _dictionary_history.version
     _dictionary_history.update
     _dictionary_history.revision
+
+    1.8.9.2 2025-07-05
+
+;  Copy-edit pass by A. Viatkus
+
+   + Add _item_type.code code to <a href="#_diffrn_source.diffrn_id" >_diffrn_source.diffrn_id</a>
+   + Add _item_type.code code to <a href="#_axis.depends_on" >_axis.depends_on</a>
+   + Fix stray uses of _item.type_code to be _item_type.code
+;
 
     1.8.9 2025-06-10
   
