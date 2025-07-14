@@ -296,6 +296,8 @@ static int cbf_lex_wrapper (void *val, void *vcontext)
   
   cbf_file *cbffile;
   
+  CBF_UNUSED( cbffile );
+
 
   do {
   
