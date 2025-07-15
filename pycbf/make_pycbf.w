@@ -66,7 +66,7 @@
 The program that does the conversion from CBFlib.txt to the SWIG
 input files is a python script named make\_pycbf.py.
 
-@o make_pycbf.py -i -t
+@O make_pycbf.py -i -t
 @{from re import match
 
 print("\\begin{verbatim}")

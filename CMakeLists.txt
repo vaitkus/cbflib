@@ -308,6 +308,7 @@ if(CBF_ENABLE_FORTRAN)
   endif()
 endif()
 
+option(CBF_ENABLE_DOC "Build documentation" OFF)
 option(CBF_ENABLE_ULP "Enable ULP" OFF)
 
 set (CBF_CMAKE_DEBUG "ON")
@@ -1054,6 +1055,24 @@ if(CBF_ENABLE_PYTHON)
     TARGETS pycbf
     COMPONENT "Runtime"
     DESTINATION "${Python_SITEARCH}")
+
+  if(CBF_ENABLE_DOC)
+    find_program(PDFLATEX pdflatex REQUIRED)
+    add_custom_command(
+      OUTPUT "pycbf.pdf"
+      COMMAND "${PDFLATEX}"
+        -interaction batchmode
+        -output-directory "${CMAKE_CURRENT_BINARY_DIR}"
+        "pycbf.tex"
+      COMMAND "${PDFLATEX}"
+        -interaction batchmode
+        -output-directory "${CMAKE_CURRENT_BINARY_DIR}"
+        "pycbf.tex"
+      MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/pycbf/pycbf.tex"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pycbf")
+    add_custom_target(pdf ALL
+      DEPENDS "pycbf.pdf")
+  endif()
 endif()
 
 
