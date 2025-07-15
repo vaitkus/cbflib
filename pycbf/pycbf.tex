@@ -936,6 +936,7 @@ input files is a python script named make\_pycbf.py.
 \NWtarget{nuweb10}{} \verb@"make_pycbf.py"@\nobreak\ {\footnotesize {10}}$\equiv$
 \vspace{-1ex}
 \begin{list}{}{} \item
+\mbox{}\verb@from re import match@\\
 \mbox{}\verb@@\\
 \mbox{}\verb@print("\\begin{verbatim}")@\\
 \mbox{}\verb@print("This output comes from make_pycbf.py which generates the wrappers")@\\
@@ -1019,7 +1020,7 @@ input files is a python script named make\_pycbf.py.
 \mbox{}\verb@      continue@\\
 \mbox{}\verb@   if line.find("#include")>=0: # why?@\\
 \mbox{}\verb@      continue @\\
-\mbox{}\verb@   if line.find("int cbf_")>=0: # We found a function@\\
+\mbox{}\verb@   if match("^\\s*int cbf_", line): # We found a function@\\
 \mbox{}\verb@      # keep going up to DESCRIPTION@\\
 \mbox{}\verb@      prototypes+=""+lines[i].rstrip()+" "@\\
 \mbox{}\verb@      # print(lines[i].rstrip())@\\
