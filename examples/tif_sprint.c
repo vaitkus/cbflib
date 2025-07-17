@@ -680,12 +680,6 @@ cbf_TIFFSNPrintDirectory(TIFF* tif, char * str, const size_t xstrlen, long flags
     return chars_used;
 }
 
-size_t
-_TIFFsnprintAscii(char * str, const size_t xstrlen, const char* cp)
-{
-	return _TIFFsnprintAsciiBounded( str, xstrlen, cp, strlen(cp));
-}
-
 static size_t
 _TIFFsnprintAsciiBounded(char * str, const size_t xstrlen, const char* cp, size_t max_chars)
 {
@@ -705,16 +699,6 @@ _TIFFsnprintAsciiBounded(char * str, const size_t xstrlen, const char* cp, size_
 		else
 			chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "\\%03o", *cp & 0xff);
 	}
-    return chars_used;
-}
-
-size_t
-_TIFFsnprintAsciiTag(char * str, const size_t xstrlen, const char* name, const char* value)
-{
-    size_t chars_used=0;
-	chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "  %s: \"", name);
-	chars_used += _TIFFsnprintAscii(str+chars_used, xstrlen, value);
-	chars_used += snprintf(str+chars_used, ((xstrlen>chars_used)?xstrlen-chars_used:0), "\"\n");
     return chars_used;
 }
 
