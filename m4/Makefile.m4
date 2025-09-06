@@ -1913,7 +1913,7 @@ build_py3ply:   $(M4)/Makefile.m4
 	touch build_py3ply
 $(PY3PLY):      build_py3ply
 	-rm -rf $(PY3PLY)
-	wget -O - -nv $(PY3PLYURL) | tar -xzf -
+	git clone $(PY3PLYURL)
 	(cd $(PY3PLY); \
 	PYTHONPATH=$(PY3CIFRW_PREFIX)/lib/python:$(PY3CIFRW_PREFIX)/lib64/python; export PYTHONPATH; \
 	mkdir -p $(PY3CIFRW_PREFIX)/lib/python/site-packages; \
