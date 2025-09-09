@@ -733,7 +733,7 @@ endif
 CC	= gcc
 C++	= g++
 ifneq ($(CBFDEBUG),)
-CFLAGS  = -g -O0 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DHAVE_REALPATH -DCBFDEBUG=1 -DHAVE_UNISTD_H $(HDF5CFLAGS)
+CFLAGS  = -g -O0 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DCBFDEBUG=1 -DHAVE_REALPATH -DHAVE_UNISTD_H $(HDF5CFLAGS)
 else
 CFLAGS  = -g -O3 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DHAVE_REALPATH -DHAVE_UNISTD_H $(HDF5CFLAGS)
 endif
