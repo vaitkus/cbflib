@@ -733,7 +733,7 @@ endif
 CC	= gcc
 C++	= g++
 ifneq ($(CBFDEBUG),)
-CFLAGS  = -g -O0 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DHAVE_REALPATH -DCBFDEBUG=1 -DHAVE_UNISTD_H $(HDF5CFLAGS)
+CFLAGS  = -g -O0 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DCBFDEBUG=1 -DHAVE_REALPATH -DHAVE_UNISTD_H $(HDF5CFLAGS)
 else
 CFLAGS  = -g -O3 -Wall -D_USE_XOPEN_EXTENDED -fno-strict-aliasing -DHAVE_REALPATH -DHAVE_UNISTD_H $(HDF5CFLAGS)
 endif
@@ -1185,6 +1185,10 @@ all::	$(BIN) $(SOURCE) $(F90SOURCE) $(HEADERS) \
 ifneq ($(F90C),)
 all::	$(BIN)/test_xds_binary   \
 	$(BIN)/test_fcb_read_image
+endif
+
+ifneq ($(CBFLIB_DONT_USE_PY3CIFRW),yes)
+all:: $(PY3CBF)/_pycbf.$(PY3CBFEXT)
 endif
 
 SO_PREFIX ?= lib

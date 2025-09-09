@@ -1197,6 +1197,10 @@ all::	$(BIN)/test_xds_binary   \
 	$(BIN)/test_fcb_read_image
 endif
 
+ifneq ($(CBFLIB_DONT_USE_PY3CIFRW),yes)
+all:: $(PY3CBF)/_pycbf.$(PY3CBFEXT)
+endif
+
 SO_PREFIX ?= lib
 SO_EXT ?= so
 

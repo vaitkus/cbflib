@@ -1553,6 +1553,10 @@ all::	$(BIN)/test_xds_binary   \
 	$(BIN)/test_fcb_read_image
 endif
 
+ifneq ($(CBFLIB_DONT_USE_PY3CIFRW),yes)
+all:: $(PY3CBF)/_pycbf.$(PY3CBFEXT)
+endif
+
 SO_PREFIX ?= lib
 SO_EXT ?= so
 
@@ -1913,7 +1917,7 @@ build_py3ply:   $(M4)/Makefile.m4
 	touch build_py3ply
 $(PY3PLY):      build_py3ply
 	-rm -rf $(PY3PLY)
-	git clone $(PY3PLYURL)
+	wget -O - -nv $(PY3PLYURL) | tar -xzf -
 	(cd $(PY3PLY); \
 	PYTHONPATH=$(PY3CIFRW_PREFIX)/lib/python:$(PY3CIFRW_PREFIX)/lib64/python; export PYTHONPATH; \
 	mkdir -p $(PY3CIFRW_PREFIX)/lib/python/site-packages; \
