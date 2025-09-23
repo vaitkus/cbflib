@@ -12100,7 +12100,7 @@ save__diffrn_frame_data.details
 
     1.8.9.2 2025-07-05
 
-;  Copy-edit pass by A. Viatkus
+;  Copy-edit pass by A. Vaitkus
 
    + Add _item_type.code code to _diffrn_source.diffrn_id
    + Add _item_type.code code to _axis.depends_on
